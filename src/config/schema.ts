@@ -21,7 +21,7 @@ export const AppConfigSchema = z.object({
   mode: z.enum(['live', 'testnet', 'sim']).default('sim'),
   allowLive: z.boolean().default(false),
   symbols: z.array(futuresSymbol).min(1),
-  symbolOverrides: z.record(z.object({
+  symbolOverrides: z.record(z.string(), z.object({
     timeframes: z.object({ context: timeframeEnum, entry: timeframeEnum }).optional(),
     risk: z.object({ positionPercent: z.number().min(0.1).max(100) }).optional(),
   })).default({}),

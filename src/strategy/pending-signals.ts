@@ -24,6 +24,10 @@ export class PendingSignalStore {
     return this.pending.has(symbol);
   }
 
+  listSymbols(): string[] {
+    return [...this.pending.keys()];
+  }
+
   pruneExpired(now: Date = new Date()): void {
     for (const [symbol, entry] of this.pending) {
       if (now > entry.signal.expiresAt) {
