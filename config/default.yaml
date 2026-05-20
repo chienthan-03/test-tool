@@ -1,0 +1,123 @@
+mode: sim
+
+allowLive: false
+
+symbols:
+  - BTCUSDT
+  - ETHUSDT
+
+symbolOverrides: {}
+
+timeframes:
+  context: 1h
+  entry: 15m
+
+feeds:
+  - id: coindesk
+    url: https://www.coindesk.com/arc/outboundfeeds/rss/
+    pollIntervalSec: 90
+    enabled: true
+  - id: cointelegraph
+    url: https://cointelegraph.com/rss
+    pollIntervalSec: 120
+    enabled: true
+
+sentiment:
+  rules:
+    impactHigh: 3
+    thresholdLLM: 3
+    minStrength: 0.4
+    strongNewsThreshold: 0.75
+    bullishKeywords:
+      - rally
+      - approval
+      - inflow
+      - rate cut
+      - partnership
+      - surge
+    bearishKeywords:
+      - hack
+      - exploit
+      - ban
+      - lawsuit
+      - outflow
+      - rate hike
+      - crash
+    bearishTags:
+      - hack
+      - regulation
+    macroTags:
+      - macro
+      - fed
+      - cpi
+    blacklistKeywords:
+      - airdrop scam
+      - guaranteed returns
+    tagRules:
+      - tag: macro
+        keywords: [fed, cpi, fomc, interest rate, powell]
+        impact: 3
+      - tag: hack
+        keywords: [hack, exploited, drained, breach]
+        impact: 3
+        sentiment: -1
+      - tag: etf
+        keywords: [etf, approval, inflow]
+        impact: 2
+  llm:
+    enabled: true
+    provider: openrouter
+    baseUrl: https://openrouter.ai/api/v1
+    model: openai/gpt-4o-mini
+    maxCallsPerHour: 20
+    minConfidence: 0.6
+    timeoutMs: 15000
+    defaultTtlMinutes: 45
+
+strategy:
+  emaContextPeriod: 50
+  emaEntryPeriod: 20
+  atrPeriod: 14
+  minAtrPercent: 0.3
+  entry:
+    requireEmaConfirm: true
+    waitForNextCandleClose: true
+  onePositionPerSymbol: true
+
+risk:
+  positionPercent: 2
+  minNotionalUsdt: 5
+  maxNotionalUsdt: null
+  slAtrMultiplier: 1.5
+  tpAtrMultiplier: 3.0
+  trailingStop: false
+
+binance:
+  baseUrl: https://fapi.binance.com
+  testnetBaseUrl: https://testnet.binancefuture.com
+  testnetWsUrl: wss://stream.binancefuture.com
+  mainnetWsUrl: wss://fstream.binance.com
+  recvWindow: 5000
+  wsReconnectMaxRetries: 10
+  circuitBreaker:
+    enabled: true
+    maxFailures: 3
+    windowMs: 300000
+
+sim:
+  initialBalanceUsdt: 10000
+  feeRate: 0.0004
+  slippageBps: 5
+  fillModel: conservative
+
+backtest:
+  klineCacheDir: ./data/klines
+  reportDir: ./data/reports
+  fillModel: conservative
+
+storage:
+  sqlitePath: ./data/trader.db
+
+logging:
+  level: info
+  pretty: true
