@@ -51,6 +51,21 @@ export class TradeRepository {
       );
   }
 
+  findOpenBySymbol(symbol: string): { id: string } | null {
+    const row = this.db
+      .prepare(`SELECT id FROM trades WHERE symbol = ? AND status = 'open' LIMIT 1`)
+      .get(symbol) as { id: string } | undefined;
+
+    return row ?? null;
+  }
+
+  countOpen(): number {
+    const row = this.db
+      .prepare(`SELECT COUNT(*) AS count FROM trades WHERE status = 'open'`)
+      .get() as { count: number };
+    return row.count;
+  }
+
   close(params: CloseTradeParams): void {
     const closedAt = (params.closedAt ?? new Date()).toISOString();
 

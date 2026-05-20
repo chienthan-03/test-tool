@@ -256,7 +256,12 @@ export class SimBroker implements ExecutionAdapter {
     this.balanceUsdt += grossPnl - exitFee;
     this.positions.delete(pos.symbol);
 
-    const closed: PositionClosedEvent = { symbol: pos.symbol, pnl: netPnl };
+    const closed: PositionClosedEvent = {
+      symbol: pos.symbol,
+      pnl: netPnl,
+      exitPrice,
+      feesUsdt: pos.entryFee + exitFee,
+    };
     this.callbacks.onPositionClosed?.(closed);
   }
 

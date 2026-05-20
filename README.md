@@ -25,3 +25,23 @@ npx tsx src/scripts/smoke-klines.ts
 ```
 
 Logs up to three closed 15m `BTCUSDT` candle closes, then exits (or stops after 45 seconds).
+
+## Phase 4 — Sim mode
+
+Run the full sim stack (RSS → signals → MTF strategy → sim broker, mainnet public klines only):
+
+```bash
+npm run dev -- start --mode sim
+```
+
+Optional: `--config config/default.yaml`, `--symbols BTCUSDT,ETHUSDT`.
+
+Press **Ctrl+C** to stop. Open positions are **not** auto-closed on shutdown.
+
+Other commands:
+
+```bash
+npm run dev -- status --mode sim
+npm run dev -- pause
+npm run dev -- resume
+```

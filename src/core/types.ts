@@ -169,6 +169,8 @@ export interface CandleCloseEvent {
 export interface PositionClosedEvent {
   symbol: string;
   pnl: number;
+  exitPrice: number;
+  feesUsdt: number;
 }
 
 export interface AppEvents {

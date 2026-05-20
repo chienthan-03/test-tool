@@ -45,6 +45,14 @@ export class SignalRepository {
       );
   }
 
+  countLast24Hours(): number {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const row = this.db
+      .prepare(`SELECT COUNT(*) AS count FROM news_signals WHERE created_at >= ?`)
+      .get(since) as { count: number };
+    return row.count;
+  }
+
   listBetween(from: Date, to: Date): NewsSignal[] {
     const rows = this.db
       .prepare(
