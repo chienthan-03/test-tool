@@ -1,6 +1,6 @@
 import type { Command } from 'commander';
 import { assertRuntimeSecrets, loadConfigWithEnv } from '../../config/loader.js';
-import { bootstrapSim, bootstrapTestnet } from '../../app/bootstrap.js';
+import { bootstrapLive, bootstrapSim, bootstrapTestnet } from '../../app/bootstrap.js';
 
 const parseSymbols = (value: string | undefined): string[] | undefined => {
   if (!value) {
@@ -43,7 +43,9 @@ export const registerStartCommand = (program: Command): void => {
           return;
         }
 
-        throw new Error(`Start for mode "${mode}" is not implemented yet.`);
+        const ctx = await bootstrapLive(options.config, symbolOverride);
+        ctx.log.warn('LIVE TRADING — real funds at risk. Press Ctrl+C to stop (open positions are not auto-closed).');
+        return;
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         console.error(message);

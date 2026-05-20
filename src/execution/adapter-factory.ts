@@ -38,7 +38,13 @@ export const createAdapter = (
   }
 
   if (mode === 'live') {
-    return new BinanceLiveAdapter();
+    const apiKey = process.env.BINANCE_API_KEY;
+    const apiSecret = process.env.BINANCE_API_SECRET;
+    if (!apiKey || !apiSecret) {
+      throw new Error('BINANCE_API_KEY and BINANCE_API_SECRET required for live');
+    }
+    const callbacks = bus ? busCallbacks(bus) : {};
+    return new BinanceLiveAdapter(config, apiKey, apiSecret, callbacks);
   }
 
   throw new Error(`Execution adapter not implemented for mode: ${mode}`);

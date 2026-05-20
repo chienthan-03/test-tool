@@ -1,41 +1,30 @@
-import type { ExecutionAdapter } from './adapter.interface.js';
+import type { AppConfig } from '../config/schema.js';
+import { createLogger } from '../core/logger.js';
+import type { FuturesFetch } from './binance-futures.js';
+import {
+  BinanceFuturesAdapter,
+  type BinanceFuturesCallbacks,
+} from './binance-futures-adapter.js';
 
-export class BinanceLiveAdapter implements ExecutionAdapter {
-  readonly mode = 'live' as const;
+export type BinanceLiveCallbacks = BinanceFuturesCallbacks;
 
-  async connect(): Promise<void> {
-    throw new Error('Live trading not implemented yet; use --mode testnet');
+const LIVE_WARN_MSG = 'LIVE TRADING ENABLED - real funds at risk';
+
+export class BinanceLiveAdapter extends BinanceFuturesAdapter {
+  private readonly warnLog = createLogger({ level: 'info', pretty: false });
+
+  constructor(
+    config: AppConfig,
+    apiKey: string,
+    apiSecret: string,
+    callbacks: BinanceLiveCallbacks = {},
+    fetchFn?: FuturesFetch,
+  ) {
+    super('live', config.binance.baseUrl, config, apiKey, apiSecret, callbacks, fetchFn);
   }
 
-  async disconnect(): Promise<void> {
-    throw new Error('Live trading not implemented yet; use --mode testnet');
-  }
-
-  async getBalance(): Promise<never> {
-    throw new Error('Live trading not implemented yet; use --mode testnet');
-  }
-
-  async getPosition(): Promise<never> {
-    throw new Error('Live trading not implemented yet; use --mode testnet');
-  }
-
-  async getAllPositions(): Promise<never> {
-    throw new Error('Live trading not implemented yet; use --mode testnet');
-  }
-
-  async placeEntry(): Promise<never> {
-    throw new Error('Live trading not implemented yet; use --mode testnet');
-  }
-
-  async placeStopLoss(): Promise<never> {
-    throw new Error('Live trading not implemented yet; use --mode testnet');
-  }
-
-  async placeTakeProfit(): Promise<never> {
-    throw new Error('Live trading not implemented yet; use --mode testnet');
-  }
-
-  async reconcile(): Promise<void> {
-    throw new Error('Live trading not implemented yet; use --mode testnet');
+  override async connect(): Promise<void> {
+    this.warnLog.warn({}, LIVE_WARN_MSG);
+    await super.connect();
   }
 }

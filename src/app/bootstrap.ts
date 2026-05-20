@@ -1,4 +1,4 @@
-import { loadConfigWithEnv } from '../config/loader.js';
+import { assertRuntimeSecrets, loadConfigWithEnv } from '../config/loader.js';
 import type { AppConfig } from '../config/schema.js';
 import { AppEventBus } from '../core/event-bus.js';
 import { createLogger } from '../core/logger.js';
@@ -33,7 +33,7 @@ import { registerShutdown } from './shutdown.js';
 const pendingPlans = new Map<string, OrderPlan>();
 const intentMeta = new Map<string, { newsId: string; newsSignalId: string }>();
 
-type TradingMode = 'sim' | 'testnet';
+type TradingMode = 'sim' | 'testnet' | 'live';
 
 const wireExecution = (
   bus: AppEventBus,
@@ -269,3 +269,15 @@ export const bootstrapTestnet = async (
   configPath: string,
   symbolOverride?: string[],
 ): Promise<RuntimeContext> => wireTradingStack(configPath, 'testnet', symbolOverride);
+
+export const bootstrapLive = async (
+  configPath: string,
+  symbolOverride?: string[],
+): Promise<RuntimeContext> => {
+  const config = loadConfigWithEnv(configPath);
+  if (!config.allowLive) {
+    throw new Error('Refusing live mode: set allowLive: true in config');
+  }
+  assertRuntimeSecrets(config, 'live');
+  return wireTradingStack(configPath, 'live', symbolOverride);
+};

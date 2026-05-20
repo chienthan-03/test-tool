@@ -75,4 +75,45 @@ Optional: `--symbols BTCUSDT` to limit symbols. Klines and user REST use `binanc
 
 Use a **small** `risk.positionPercent` (e.g. `0.5`) while validating SL/TP in the testnet UI. Default config uses `2` (% of balance per trade). Multiple open positions each reserve full `positionPercent` — total exposure can exceed balance notionally.
 
-Live mode (`--mode live`) is not implemented yet; the adapter factory refuses it until Phase 7.
+## Phase 7 — Live mode (mainnet)
+
+**Real money.** Orders execute on Binance USDⓈ-M Futures mainnet. Only enable after validating on testnet.
+
+### Safety gate
+
+Set in your config YAML (not only env):
+
+```yaml
+allowLive: true
+```
+
+Without `allowLive: true`, `start --mode live` exits with: `Refusing live mode: set allowLive: true in config`.
+
+### API keys
+
+1. Create **Futures** API keys at https://www.binance.com → API Management.
+2. **Disable withdrawals** on the key (recommended).
+3. Restrict IP if possible; never commit keys.
+4. Set in `.env`:
+
+```bash
+BINANCE_API_KEY=your_mainnet_key
+BINANCE_API_SECRET=your_mainnet_secret
+```
+
+### Run
+
+```bash
+# Edit config: allowLive: true
+npm run dev -- start --mode live
+npm run dev -- status --mode live
+```
+
+Uses `binance.baseUrl` / `mainnetWsUrl`. On connect the adapter logs: **LIVE TRADING ENABLED - real funds at risk**.
+
+### Risk warnings
+
+- Start with a **very small** `risk.positionPercent` (e.g. `0.1`–`0.5`).
+- Circuit breaker halts new entries after repeated API failures; it does not close open positions.
+- Open positions are **not** auto-closed on Ctrl+C shutdown.
+- You are responsible for SL/TP visibility in the Binance UI and for account margin.
