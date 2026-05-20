@@ -140,6 +140,26 @@ describe('BinanceFuturesClient', () => {
     expect(url).toContain('stopPrice=49000');
   });
 
+  it('getAllPositionRisk returns only non-flat positions', async () => {
+    const fetchFn = mockFetch({
+      position: [
+        { symbol: 'BTCUSDT', positionAmt: '0.1', entryPrice: '50000', unrealizedProfit: '5' },
+        { symbol: 'ETHUSDT', positionAmt: '0', entryPrice: '0' },
+      ],
+    });
+    const client = new BinanceFuturesClient(BASE, API_KEY, API_SECRET, RECV_WINDOW, fetchFn);
+
+    await expect(client.getAllPositionRisk()).resolves.toEqual([
+      {
+        symbol: 'BTCUSDT',
+        side: 'LONG',
+        quantity: 0.1,
+        entryPrice: 50000,
+        unrealizedPnl: 5,
+      },
+    ]);
+  });
+
   it('getListenKey and keepaliveListenKey use API key header only', async () => {
     const fetchFn = mockFetch({});
     const client = new BinanceFuturesClient(BASE, API_KEY, API_SECRET, RECV_WINDOW, fetchFn);

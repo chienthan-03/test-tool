@@ -23,6 +23,8 @@ type OrderResponse = {
   side: OrderSide;
   type: string;
   status: string;
+  avgPrice?: string;
+  executedQty?: string;
 };
 
 type ListenKeyResponse = {
@@ -39,6 +41,30 @@ const parsePositionSide = (positionAmt: number): PositionSide | null => {
     return 'SHORT';
   }
   return null;
+};
+
+const mapPositionRow = (
+  rows: PositionRiskRow[],
+  symbol: string,
+): Position | null => {
+  const row = rows.find((r) => r.symbol === symbol);
+  if (!row) {
+    return null;
+  }
+
+  const positionAmt = Number(row.positionAmt);
+  const side = parsePositionSide(positionAmt);
+  if (!side) {
+    return null;
+  }
+
+  return {
+    symbol: row.symbol,
+    side,
+    quantity: Math.abs(positionAmt),
+    entryPrice: Number(row.entryPrice),
+    unrealizedPnl: row.unrealizedProfit !== undefined ? Number(row.unrealizedProfit) : undefined,
+  };
 };
 
 export class BinanceFuturesClient {
@@ -73,24 +99,28 @@ export class BinanceFuturesClient {
 
   async getPositionRisk(symbol: string): Promise<Position | null> {
     const rows = await this.signedGet<PositionRiskRow[]>('/fapi/v2/positionRisk', { symbol });
-    const row = rows.find((r) => r.symbol === symbol);
-    if (!row) {
-      return null;
-    }
+    return mapPositionRow(rows, symbol);
+  }
 
-    const positionAmt = Number(row.positionAmt);
-    const side = parsePositionSide(positionAmt);
-    if (!side) {
-      return null;
+  async getAllPositionRisk(): Promise<Position[]> {
+    const rows = await this.signedGet<PositionRiskRow[]>('/fapi/v2/positionRisk');
+    const positions: Position[] = [];
+    for (const row of rows) {
+      const positionAmt = Number(row.positionAmt);
+      const side = parsePositionSide(positionAmt);
+      if (!side) {
+        continue;
+      }
+      positions.push({
+        symbol: row.symbol,
+        side,
+        quantity: Math.abs(positionAmt),
+        entryPrice: Number(row.entryPrice),
+        unrealizedPnl:
+          row.unrealizedProfit !== undefined ? Number(row.unrealizedProfit) : undefined,
+      });
     }
-
-    return {
-      symbol: row.symbol,
-      side,
-      quantity: Math.abs(positionAmt),
-      entryPrice: Number(row.entryPrice),
-      unrealizedPnl: row.unrealizedProfit !== undefined ? Number(row.unrealizedProfit) : undefined,
-    };
+    return positions;
   }
 
   async placeMarketOrder(

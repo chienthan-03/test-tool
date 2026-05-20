@@ -1,4 +1,5 @@
 import { loadConfigWithEnv } from '../config/loader.js';
+import type { AppConfig } from '../config/schema.js';
 import { AppEventBus } from '../core/event-bus.js';
 import { createLogger } from '../core/logger.js';
 import { isPaused } from '../core/pause-flag.js';
@@ -31,6 +32,8 @@ import { registerShutdown } from './shutdown.js';
 
 const pendingPlans = new Map<string, OrderPlan>();
 const intentMeta = new Map<string, { newsId: string; newsSignalId: string }>();
+
+type TradingMode = 'sim' | 'testnet';
 
 const wireExecution = (
   bus: AppEventBus,
@@ -130,12 +133,16 @@ const persistOpenTrade = (
   log.info({ tradeId: plan.intentId, symbol: fill.symbol }, 'trade_opened');
 };
 
-export const bootstrapSim = async (
+const binanceRestBaseUrl = (config: AppConfig): string =>
+  config.mode === 'testnet' ? config.binance.testnetBaseUrl : config.binance.baseUrl;
+
+const wireTradingStack = async (
   configPath: string,
+  mode: TradingMode,
   symbolOverride?: string[],
 ): Promise<RuntimeContext> => {
   const config = loadConfigWithEnv(configPath);
-  config.mode = 'sim';
+  config.mode = mode;
 
   if (symbolOverride && symbolOverride.length > 0) {
     config.symbols = symbolOverride;
@@ -151,10 +158,10 @@ export const bootstrapSim = async (
   });
 
   const tradeRepo = new TradeRepository(db);
-  const adapter = createAdapter('sim', config, db, bus);
+  const adapter = createAdapter(mode, config, db, bus);
   await adapter.connect();
 
-  wireExecution(bus, adapter, tradeRepo, 'sim', log);
+  wireExecution(bus, adapter, tradeRepo, mode, log);
 
   const mapper = new SymbolMapper(config.symbols);
   const scorer = new RuleScorer(config.sentiment.rules);
@@ -213,12 +220,13 @@ export const bootstrapSim = async (
     isPaused,
   );
 
+  const restBase = binanceRestBaseUrl(config);
   const risk = new RiskEngine(
     config,
     bus,
     () => adapter.getBalance(),
     async (symbol) => {
-      const filters = await getSymbolFilters(config.binance.baseUrl, symbol);
+      const filters = await getSymbolFilters(restBase, symbol);
       return {
         stepSize: filters.stepSize,
         minQty: filters.minQty,
@@ -233,7 +241,7 @@ export const bootstrapSim = async (
 
   const ctx: RuntimeContext = {
     config,
-    mode: 'sim',
+    mode,
     bus,
     log,
     db,
@@ -247,7 +255,17 @@ export const bootstrapSim = async (
   };
 
   registerShutdown(ctx);
-  log.info({ symbols: config.symbols, mode: 'sim' }, 'sim_runtime_started');
+  log.info({ symbols: config.symbols, mode }, `${mode}_runtime_started`);
 
   return ctx;
 };
+
+export const bootstrapSim = async (
+  configPath: string,
+  symbolOverride?: string[],
+): Promise<RuntimeContext> => wireTradingStack(configPath, 'sim', symbolOverride);
+
+export const bootstrapTestnet = async (
+  configPath: string,
+  symbolOverride?: string[],
+): Promise<RuntimeContext> => wireTradingStack(configPath, 'testnet', symbolOverride);

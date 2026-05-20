@@ -45,3 +45,34 @@ npm run dev -- status --mode sim
 npm run dev -- pause
 npm run dev -- resume
 ```
+
+## Phase 6 — Testnet mode
+
+Trade on [Binance Futures Testnet](https://testnet.binancefuture.com) with real signed orders (MARKET entry + reduce-only STOP_MARKET / TAKE_PROFIT_MARKET).
+
+### API keys
+
+1. Create Futures Testnet API keys at https://testnet.binancefuture.com → API Management.
+2. Copy `.env.example` to `.env` and set:
+
+```bash
+BINANCE_API_KEY=your_testnet_key
+BINANCE_API_SECRET=your_testnet_secret
+```
+
+Withdrawals are not applicable on testnet; still treat keys as secrets.
+
+### Run
+
+```bash
+npm run dev -- start --mode testnet
+npm run dev -- status --mode testnet
+```
+
+Optional: `--symbols BTCUSDT` to limit symbols. Klines and user REST use `binance.testnetBaseUrl` / `testnetWsUrl` from config.
+
+### Risk warning
+
+Use a **small** `risk.positionPercent` (e.g. `0.5`) while validating SL/TP in the testnet UI. Default config uses `2` (% of balance per trade). Multiple open positions each reserve full `positionPercent` — total exposure can exceed balance notionally.
+
+Live mode (`--mode live`) is not implemented yet; the adapter factory refuses it until Phase 7.

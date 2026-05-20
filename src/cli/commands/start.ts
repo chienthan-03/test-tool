@@ -1,6 +1,6 @@
 import type { Command } from 'commander';
 import { assertRuntimeSecrets, loadConfigWithEnv } from '../../config/loader.js';
-import { bootstrapSim } from '../../app/bootstrap.js';
+import { bootstrapSim, bootstrapTestnet } from '../../app/bootstrap.js';
 
 const parseSymbols = (value: string | undefined): string[] | undefined => {
   if (!value) {
@@ -29,9 +29,16 @@ export const registerStartCommand = (program: Command): void => {
         const config = loadConfigWithEnv(options.config);
         assertRuntimeSecrets(config, mode);
 
+        const symbolOverride = parseSymbols(options.symbols);
+
         if (mode === 'sim') {
-          const symbolOverride = parseSymbols(options.symbols);
           const ctx = await bootstrapSim(options.config, symbolOverride);
+          ctx.log.info('Press Ctrl+C to stop (open positions are not auto-closed).');
+          return;
+        }
+
+        if (mode === 'testnet') {
+          const ctx = await bootstrapTestnet(options.config, symbolOverride);
           ctx.log.info('Press Ctrl+C to stop (open positions are not auto-closed).');
           return;
         }
