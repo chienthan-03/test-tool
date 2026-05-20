@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { registerBacktestCommand } from './commands/backtest.js';
 import { registerFeedsCommand } from './commands/feeds.js';
 import { registerPauseCommand } from './commands/pause.js';
 import { registerResumeCommand } from './commands/resume.js';
@@ -17,12 +18,6 @@ registerStartCommand(program);
 registerStatusCommand(program);
 registerPauseCommand(program);
 registerResumeCommand(program);
-
-const stubAction = (): void => {
-  console.error('not implemented');
-  process.exit(1);
-};
-
-program.command('backtest').description('Run a historical backtest').action(stubAction);
+registerBacktestCommand(program);
 
 program.parse();

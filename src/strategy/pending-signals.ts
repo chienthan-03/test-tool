@@ -8,8 +8,8 @@ export interface PendingSignalEntry {
 export class PendingSignalStore {
   private readonly pending = new Map<string, PendingSignalEntry>();
 
-  set(symbol: string, signal: NewsSignal): void {
-    this.pending.set(symbol, { signal, receivedAt: new Date() });
+  set(symbol: string, signal: NewsSignal, receivedAt?: Date): void {
+    this.pending.set(symbol, { signal, receivedAt: receivedAt ?? new Date() });
   }
 
   get(symbol: string): PendingSignalEntry | undefined {

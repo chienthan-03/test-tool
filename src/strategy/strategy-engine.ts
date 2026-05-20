@@ -20,6 +20,7 @@ export class StrategyEngine {
     private readonly pending: PendingSignalStore,
     private readonly hasPosition: (symbol: string) => Promise<boolean>,
     private readonly isPaused: () => boolean,
+    private readonly getNow: () => Date = () => new Date(),
   ) {
     this.bus.on('news:signal', (signal) => {
       void this.handleNewsSignal(signal);
@@ -41,7 +42,7 @@ export class StrategyEngine {
       ) {
         continue;
       }
-      this.pending.set(symbol, signal);
+      this.pending.set(symbol, signal, signal.createdAt);
     }
   }
 
@@ -54,7 +55,7 @@ export class StrategyEngine {
       return;
     }
 
-    this.pending.pruneExpired();
+    this.pending.pruneExpired(this.getNow());
 
     const pendingEntry = this.pending.get(event.symbol);
     if (!pendingEntry) {
@@ -102,7 +103,7 @@ export class StrategyEngine {
       atr: entry.atr,
       contextTimeframe: this.config.timeframes.context,
       entryTimeframe: this.config.timeframes.entry,
-      createdAt: new Date(),
+      createdAt: this.getNow(),
     };
 
     this.pending.remove(event.symbol);
