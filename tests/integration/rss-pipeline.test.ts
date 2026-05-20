@@ -64,6 +64,7 @@ const buildTestContext = (config: AppConfig, fetchFn: FetchFn) => {
     poller,
     pipeline,
     feedRepo: new FeedRepository(db),
+    bus,
     log,
   });
 

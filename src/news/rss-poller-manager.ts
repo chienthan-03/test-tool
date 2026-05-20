@@ -1,4 +1,5 @@
 import type { AppConfig, FeedConfig } from '../config/schema.js';
+import type { AppEventBus } from '../core/event-bus.js';
 import type { Logger } from '../core/logger.js';
 import type { FeedRepository } from '../storage/repositories/feed-repo.js';
 import type { NewsPipeline } from '../sentiment/news-pipeline.js';
@@ -22,6 +23,7 @@ export class RssPollerManager {
       poller: RssPoller;
       pipeline: NewsPipeline;
       feedRepo: FeedRepository;
+      bus: AppEventBus;
       log: Logger;
     },
   ) {}
@@ -53,12 +55,12 @@ export class RssPollerManager {
     this.started = false;
   }
 
-  async pollFeed(feed: FeedConfig): Promise<void> {
+  async pollFeed(feed: FeedConfig): Promise<number> {
     const state = this.getFeedState(feed.id);
 
     if (state.degradedUntil !== undefined && Date.now() < state.degradedUntil) {
       this.deps.log.warn({ feedId: feed.id }, 'feed degraded, skipping poll');
-      return;
+      return 0;
     }
 
     if (state.degradedUntil !== undefined && Date.now() >= state.degradedUntil) {
@@ -79,6 +81,8 @@ export class RssPollerManager {
         lastError: null,
         consecutiveFailures: 0,
       });
+
+      return items.length;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       const existing = this.deps.feedRepo.getStatus(feed.id);
@@ -103,7 +107,28 @@ export class RssPollerManager {
           'feed marked degraded',
         );
       }
+
+      return 0;
     }
+  }
+
+  async pollAllEnabledOnce(): Promise<{ itemsFetched: number; signalsCreated: number }> {
+    let itemsFetched = 0;
+    let signalsCreated = 0;
+
+    this.deps.bus.on('news:signal', () => {
+      signalsCreated += 1;
+    });
+
+    for (const feed of this.deps.config.feeds) {
+      if (!feed.enabled) {
+        continue;
+      }
+
+      itemsFetched += await this.pollFeed(feed);
+    }
+
+    return { itemsFetched, signalsCreated };
   }
 
   private scheduleFeed(feed: FeedConfig): void {

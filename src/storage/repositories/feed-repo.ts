@@ -19,6 +19,30 @@ export interface FeedStatus {
 export class FeedRepository {
   constructor(private readonly db: Database.Database) {}
 
+  listAll(): FeedStatus[] {
+    const rows = this.db
+      .prepare(
+        `SELECT feed_id, last_success_at, last_error_at, last_error, consecutive_failures
+         FROM feed_status
+         ORDER BY feed_id ASC`,
+      )
+      .all() as Array<{
+        feed_id: string;
+        last_success_at: string | null;
+        last_error_at: string | null;
+        last_error: string | null;
+        consecutive_failures: number;
+      }>;
+
+    return rows.map((row) => ({
+      feedId: row.feed_id,
+      lastSuccessAt: row.last_success_at ? new Date(row.last_success_at) : null,
+      lastErrorAt: row.last_error_at ? new Date(row.last_error_at) : null,
+      lastError: row.last_error,
+      consecutiveFailures: row.consecutive_failures,
+    }));
+  }
+
   getStatus(feedId: string): FeedStatus | null {
     const row = this.db
       .prepare(
