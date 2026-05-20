@@ -105,4 +105,99 @@ describe('LlmGateway', () => {
     expect(fetchMock).not.toHaveBeenCalled();
     expect(llmRepo.insertCall).not.toHaveBeenCalled();
   });
+
+  it('returns null without OPENROUTER_API_KEY', async () => {
+    delete process.env.OPENROUTER_API_KEY;
+    const config = loadConfig(defaultConfigPath);
+    const fetchMock = vi.fn() as unknown as typeof fetch;
+    const gateway = new LlmGateway(config.sentiment.llm, makeLlmRepo(), fetchMock);
+
+    const result = await gateway.analyze(makeNewsItem(), makeRule(), ['BTCUSDT']);
+
+    expect(result).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('returns null on non-retryable HTTP error', async () => {
+    const config = loadConfig(defaultConfigPath);
+    const llmRepo = makeLlmRepo();
+    const fetchMock = vi.fn(async () => ({
+      ok: false,
+      status: 401,
+      json: async () => ({}),
+    })) as unknown as typeof fetch;
+
+    const gateway = new LlmGateway(config.sentiment.llm, llmRepo, fetchMock);
+    const result = await gateway.analyze(makeNewsItem(), makeRule(), ['BTCUSDT']);
+
+    expect(result).toBeNull();
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(llmRepo.insertCall).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, error: 'HTTP 401' }),
+    );
+  });
+
+  it('retries strict prompt after invalid content JSON then succeeds', async () => {
+    const config = loadConfig(defaultConfigPath);
+    const llmRepo = makeLlmRepo();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [{ message: { content: 'not-json' } }],
+          usage: { prompt_tokens: 10, completion_tokens: 5 },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => validBullishFixture,
+      }) as unknown as typeof fetch;
+
+    const gateway = new LlmGateway(config.sentiment.llm, llmRepo, fetchMock);
+    const result = await gateway.analyze(makeNewsItem(), makeRule(), ['BTCUSDT']);
+
+    expect(result?.sentiment).toBe(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(llmRepo.insertCall).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, error: 'invalid content json' }),
+    );
+    expect(llmRepo.insertCall).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+  });
+
+  it('returns null when schema validation fails', async () => {
+    const config = loadConfig(defaultConfigPath);
+    const llmRepo = makeLlmRepo();
+    const badPayload = {
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              sentiment: 99,
+              confidence: 0.85,
+              affectedSymbols: ['BTCUSDT'],
+              rationale: 'bad',
+              ttlMinutes: 60,
+            }),
+          },
+        },
+      ],
+      usage: { prompt_tokens: 1, completion_tokens: 1 },
+    };
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => badPayload,
+    })) as unknown as typeof fetch;
+
+    const gateway = new LlmGateway(config.sentiment.llm, llmRepo, fetchMock);
+    const result = await gateway.analyze(makeNewsItem(), makeRule(), ['BTCUSDT']);
+
+    expect(result).toBeNull();
+    expect(llmRepo.insertCall).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, error: 'schema validation failed' }),
+    );
+  });
 });

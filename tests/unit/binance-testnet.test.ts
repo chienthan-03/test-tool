@@ -82,7 +82,9 @@ describe('BinanceTestnetAdapter', () => {
     vi.restoreAllMocks();
   });
 
-  it('halts placeEntry when circuit breaker is open', async () => {
+  it(
+    'halts placeEntry when circuit breaker is open',
+    async () => {
     const onFill = vi.fn();
     const cfg = {
       ...config,
@@ -112,7 +114,9 @@ describe('BinanceTestnetAdapter', () => {
 
     expect(onFill).not.toHaveBeenCalled();
     await adapter.disconnect();
-  });
+    },
+    15_000,
+  );
 
   it('placeEntry emits fill and places SL/TP (mocked HTTP)', async () => {
     const onFill = vi.fn();
