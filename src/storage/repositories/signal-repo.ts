@@ -1,0 +1,60 @@
+import type Database from 'better-sqlite3';
+import type { NewsSignal, SignalDirection, SignalSource } from '../../core/types.js';
+
+interface SignalRow {
+  id: string;
+  news_id: string;
+  symbols_json: string;
+  direction: SignalDirection;
+  strength: number;
+  source: SignalSource;
+  expires_at: string;
+  created_at: string;
+}
+
+const rowToSignal = (row: SignalRow): NewsSignal => ({
+  id: row.id,
+  newsId: row.news_id,
+  symbols: JSON.parse(row.symbols_json) as string[],
+  direction: row.direction,
+  strength: row.strength,
+  source: row.source,
+  expiresAt: new Date(row.expires_at),
+  createdAt: new Date(row.created_at),
+});
+
+export class SignalRepository {
+  constructor(private readonly db: Database.Database) {}
+
+  insert(signal: NewsSignal): void {
+    this.db
+      .prepare(
+        `INSERT INTO news_signals (
+          id, news_id, symbols_json, direction, strength, source, expires_at, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        signal.id,
+        signal.newsId,
+        JSON.stringify(signal.symbols),
+        signal.direction,
+        signal.strength,
+        signal.source,
+        signal.expiresAt.toISOString(),
+        signal.createdAt.toISOString(),
+      );
+  }
+
+  listBetween(from: Date, to: Date): NewsSignal[] {
+    const rows = this.db
+      .prepare(
+        `SELECT id, news_id, symbols_json, direction, strength, source, expires_at, created_at
+         FROM news_signals
+         WHERE created_at >= ? AND created_at <= ?
+         ORDER BY created_at ASC`,
+      )
+      .all(from.toISOString(), to.toISOString()) as SignalRow[];
+
+    return rows.map(rowToSignal);
+  }
+}
