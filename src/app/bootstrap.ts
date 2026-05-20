@@ -11,6 +11,7 @@ import { KlineStore } from '../market/kline-store.js';
 import { RssPoller } from '../news/rss-poller.js';
 import { RssPollerManager } from '../news/rss-poller-manager.js';
 import { SymbolMapper } from '../news/symbol-mapper.js';
+import { LlmGateway } from '../sentiment/llm-gateway.js';
 import { NewsPipeline } from '../sentiment/news-pipeline.js';
 import { RuleScorer } from '../sentiment/rule-scorer.js';
 import { SignalMerger } from '../sentiment/signal-merger.js';
@@ -21,6 +22,7 @@ import { StrategyEngine } from '../strategy/strategy-engine.js';
 import { openDatabase } from '../storage/db.js';
 import { migrate } from '../storage/migrate.js';
 import { FeedRepository } from '../storage/repositories/feed-repo.js';
+import { LlmRepository } from '../storage/repositories/llm-repo.js';
 import { NewsRepository } from '../storage/repositories/news-repo.js';
 import { SignalRepository } from '../storage/repositories/signal-repo.js';
 import { TradeRepository } from '../storage/repositories/trade-repo.js';
@@ -165,10 +167,15 @@ export const bootstrapSim = async (
     },
   });
 
+  const llmGateway = config.sentiment.llm.enabled
+    ? new LlmGateway(config.sentiment.llm, new LlmRepository(db))
+    : null;
+
   const newsPipeline = new NewsPipeline({
     mapper,
     scorer,
     merger,
+    llmGateway,
     newsRepo: new NewsRepository(db),
     signalRepo: new SignalRepository(db),
     bus,

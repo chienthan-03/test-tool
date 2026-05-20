@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Macro News</title>
+    <link>https://fixture.local</link>
+    <description>Macro RSS</description>
+    <item>
+      <title>Fed and CPI in focus as FOMC holds rates; Bitcoin traders watch Powell</title>
+      <link>https://fixture.local/macro-ambiguous</link>
+      <description>Traders await guidance with no clear risk-on or risk-off bias across crypto markets.</description>
+      <pubDate>Mon, 20 May 2026 10:00:00 GMT</pubDate>
+      <guid>https://fixture.local/macro-ambiguous</guid>
+    </item>
+  </channel>
+</rss>

@@ -7,6 +7,7 @@ import { normalizeRssItem } from '../news/normalizer.js';
 import type { SymbolMapper } from '../news/symbol-mapper.js';
 import type { NewsRepository } from '../storage/repositories/news-repo.js';
 import type { SignalRepository } from '../storage/repositories/signal-repo.js';
+import type { LlmGateway } from './llm-gateway.js';
 import type { RuleScorer, RuleScoreDiscard } from './rule-scorer.js';
 import type { SignalMerger } from './signal-merger.js';
 
@@ -21,6 +22,7 @@ export class NewsPipeline {
       mapper: SymbolMapper;
       scorer: RuleScorer;
       merger: SignalMerger;
+      llmGateway: LlmGateway | null;
       newsRepo: NewsRepository;
       signalRepo: SignalRepository;
       bus: AppEventBus;
@@ -55,7 +57,16 @@ export class NewsPipeline {
       return;
     }
 
-    const signal = this.deps.merger.build(scoreResult, news, null);
+    let llm = null;
+    if (
+      scoreResult.needsLlm &&
+      this.deps.llmGateway &&
+      this.deps.config.sentiment.llm.enabled
+    ) {
+      llm = await this.deps.llmGateway.analyze(news, scoreResult, this.deps.config.symbols);
+    }
+
+    const signal = this.deps.merger.build(scoreResult, news, llm);
     if (signal === null) {
       this.deps.newsRepo.markProcessed(news.id);
       return;

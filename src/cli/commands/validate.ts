@@ -1,7 +1,42 @@
 import type { Command } from 'commander';
+import { fetch } from 'undici';
 import { loadConfigWithEnv } from '../../config/loader.js';
+import type { AppConfig } from '../../config/schema.js';
 import type { FetchFn } from '../../news/rss-poller.js';
 import { createNewsStack } from '../news-stack.js';
+
+type FetchLike = typeof fetch;
+
+export const validateOpenRouter = async (
+  config: AppConfig,
+  fetchFn: FetchLike = fetch,
+): Promise<void> => {
+  if (!config.sentiment.llm.enabled) {
+    console.warn('OpenRouter: disabled (sentiment.llm.enabled is false)');
+    return;
+  }
+
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    console.warn('OpenRouter: disabled (OPENROUTER_API_KEY not set)');
+    return;
+  }
+
+  const url = `${config.sentiment.llm.baseUrl}/models`;
+  const response = await fetchFn(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    },
+    signal: AbortSignal.timeout(config.sentiment.llm.timeoutMs),
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenRouter validation failed: HTTP ${response.status}`);
+  }
+
+  console.log('OpenRouter: OK');
+};
 
 export const runValidateDryPoll = async (
   configPath: string,
@@ -26,6 +61,8 @@ export const registerValidateCommand = (program: Command): void => {
     .action(async (options: { config: string; dryPoll?: boolean }) => {
       try {
         const config = loadConfigWithEnv(options.config);
+
+        await validateOpenRouter(config);
 
         if (!options.dryPoll) {
           console.log('Config valid.');
