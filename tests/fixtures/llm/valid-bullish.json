@@ -1,0 +1,16 @@
+{
+  "id": "gen-test-123",
+  "model": "openai/gpt-4o-mini",
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": "{\"sentiment\":1,\"confidence\":0.85,\"affectedSymbols\":[\"BTCUSDT\"],\"rationale\":\"ETF inflows and risk-on macro support BTC futures.\",\"ttlMinutes\":60}"
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 312,
+    "completion_tokens": 48
+  }
+}
