@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>CoinDesk</title>
+    <link>https://www.coindesk.com</link>
+    <description>CoinDesk RSS</description>
+    <item>
+      <title>Bitcoin surges to new high</title>
+      <link>https://www.coindesk.com/markets/bitcoin-surges-new-high</link>
+      <description>ETF approval and rally momentum push Bitcoin past prior records as traders cite strong inflows.</description>
+      <pubDate>Mon, 20 May 2026 10:00:00 GMT</pubDate>
+      <guid>https://www.coindesk.com/markets/bitcoin-surges-new-high</guid>
+    </item>
+    <item>
+      <title>Ethereum holds steady amid mixed crypto trading</title>
+      <link>https://www.coindesk.com/markets/ethereum-steady</link>
+      <description>Markets wait without a clear bias while volume stays flat.</description>
+      <pubDate>Mon, 20 May 2026 09:00:00 GMT</pubDate>
+      <guid>https://www.coindesk.com/markets/ethereum-steady</guid>
+    </item>
+  </channel>
+</rss>

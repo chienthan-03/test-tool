@@ -8,8 +8,45 @@ export interface FeedStatusUpdate {
   consecutiveFailures?: number;
 }
 
+export interface FeedStatus {
+  feedId: string;
+  lastSuccessAt: Date | null;
+  lastErrorAt: Date | null;
+  lastError: string | null;
+  consecutiveFailures: number;
+}
+
 export class FeedRepository {
   constructor(private readonly db: Database.Database) {}
+
+  getStatus(feedId: string): FeedStatus | null {
+    const row = this.db
+      .prepare(
+        `SELECT feed_id, last_success_at, last_error_at, last_error, consecutive_failures
+         FROM feed_status WHERE feed_id = ?`,
+      )
+      .get(feedId) as
+      | {
+          feed_id: string;
+          last_success_at: string | null;
+          last_error_at: string | null;
+          last_error: string | null;
+          consecutive_failures: number;
+        }
+      | undefined;
+
+    if (!row) {
+      return null;
+    }
+
+    return {
+      feedId: row.feed_id,
+      lastSuccessAt: row.last_success_at ? new Date(row.last_success_at) : null,
+      lastErrorAt: row.last_error_at ? new Date(row.last_error_at) : null,
+      lastError: row.last_error,
+      consecutiveFailures: row.consecutive_failures,
+    };
+  }
 
   upsertStatus(update: FeedStatusUpdate): void {
     const existing = this.db

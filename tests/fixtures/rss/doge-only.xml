@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Meme Coin Daily</title>
+    <link>https://example.com/doge</link>
+    <description>Dogecoin news</description>
+    <item>
+      <title>Dogecoin rallies as DOGE whales accumulate</title>
+      <link>https://example.com/doge-rally</link>
+      <description>Meme coin traders pile into Dogecoin after social media buzz.</description>
+      <pubDate>Mon, 20 May 2026 11:00:00 GMT</pubDate>
+      <guid>https://example.com/doge-rally</guid>
+    </item>
+  </channel>
+</rss>
