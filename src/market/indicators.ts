@@ -99,3 +99,40 @@ export const emaSlopeDown = (emaSeries: number[], lookback = 3): boolean => {
   }
   return end < prior;
 };
+
+/** RSI (Wilder smoothing). Returns NaN until period bars available. */
+export const rsi = (closes: number[], period: number): number[] => {
+  const result: number[] = [];
+  if (period <= 0 || closes.length <= period) {
+    return result;
+  }
+
+  let avgGain = 0;
+  let avgLoss = 0;
+  for (let i = 1; i <= period; i++) {
+    const change = closes[i]! - closes[i - 1]!;
+    if (change >= 0) {
+      avgGain += change;
+    } else {
+      avgLoss -= change;
+    }
+  }
+  avgGain /= period;
+  avgLoss /= period;
+
+  for (let i = 0; i < period; i++) {
+    result.push(Number.NaN);
+  }
+  result.push(avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss));
+
+  for (let i = period + 1; i < closes.length; i++) {
+    const change = closes[i]! - closes[i - 1]!;
+    const gain = change > 0 ? change : 0;
+    const loss = change < 0 ? -change : 0;
+    avgGain = (avgGain * (period - 1) + gain) / period;
+    avgLoss = (avgLoss * (period - 1) + loss) / period;
+    result.push(avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss));
+  }
+
+  return result;
+};

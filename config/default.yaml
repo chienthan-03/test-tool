@@ -9,8 +9,8 @@ symbols:
 symbolOverrides: {}
 
 timeframes:
-  context: 1h
-  entry: 15m
+  context: 1d
+  entry: 4h
 
 feeds:
   - id: coindesk
@@ -26,7 +26,7 @@ sentiment:
   rules:
     impactHigh: 3
     thresholdLLM: 3
-    minStrength: 0.4
+    minStrength: 0.5
     strongNewsThreshold: 0.75
     bullishKeywords:
       - rally
@@ -68,27 +68,40 @@ sentiment:
     enabled: true
     provider: openrouter
     baseUrl: https://openrouter.ai/api/v1
-    model: openai/gpt-4o-mini
+    model: openai/gpt-oss-120b:free
     maxCallsPerHour: 20
     minConfidence: 0.6
     timeoutMs: 15000
     defaultTtlMinutes: 45
 
 strategy:
-  emaContextPeriod: 50
-  emaEntryPeriod: 20
   atrPeriod: 14
-  minAtrPercent: 0.3
+  minAtrPercent: 0.12
+  maxAtrPercent: 3.5
   entry:
-    requireEmaConfirm: true
     waitForNextCandleClose: true
   onePositionPerSymbol: true
+  swing:
+    lookback: 3
+    minSwingCount: 5
+    minImpulsePercent: 80
+  elliott:
+    allowSideways: false
+    contextRequireImpulse: false
+  fibonacci:
+    entryMin: 0.382
+    entryMax: 0.618
+    zoneTolerancePercent: 0.05
+    stopLevel: 0.886
+    targetExtension: 1.618
+    stopBelowSwing: true
+    stopBufferPercent: 0.002
 
 risk:
   positionPercent: 2
   minNotionalUsdt: 5
   maxNotionalUsdt: null
-  slAtrMultiplier: 1.5
+  slAtrMultiplier: 2.0
   tpAtrMultiplier: 3.0
   trailingStop: false
 

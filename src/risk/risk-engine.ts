@@ -41,13 +41,16 @@ export class RiskEngine {
     const filters = await this.getFilters(intent.symbol);
     const balance = await this.getBalance();
 
-    const { stopLoss, takeProfit } = calcSlTp({
-      side: intent.side,
-      entryPrice: intent.entryPrice,
-      atr: intent.atr,
-      slMult: this.config.risk.slAtrMultiplier,
-      tpMult: this.config.risk.tpAtrMultiplier,
-    });
+    const { stopLoss, takeProfit } =
+      intent.stopLoss != null && intent.takeProfit != null
+        ? { stopLoss: intent.stopLoss, takeProfit: intent.takeProfit }
+        : calcSlTp({
+            side: intent.side,
+            entryPrice: intent.entryPrice,
+            atr: intent.atr,
+            slMult: this.config.risk.slAtrMultiplier,
+            tpMult: this.config.risk.tpAtrMultiplier,
+          });
 
     const sized = calcQuantity({
       availableBalance: balance.available,

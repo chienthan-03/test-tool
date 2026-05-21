@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Candle } from '../../src/core/types.js';
-import { atr, ema, emaSlopeUp, sma } from '../../src/market/indicators.js';
+import { atr, ema, emaSlopeUp, rsi, sma } from '../../src/market/indicators.js';
 
 const makeCandle = (params: {
   openTime: number;
@@ -52,5 +52,18 @@ describe('indicators', () => {
   it('emaSlopeUp is true on rising EMA series', () => {
     const rising = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     expect(emaSlopeUp(rising, 3)).toBe(true);
+  });
+
+  it('rsi rises on choppy uptrend within pullback band', () => {
+    let close = 100;
+    const closes = [close];
+    for (let i = 1; i < 45; i++) {
+      close += i % 2 === 0 ? 0.5 : -0.35;
+      closes.push(close);
+    }
+    const series = rsi(closes, 14);
+    const lastRsi = series[series.length - 1];
+    expect(lastRsi).toBeGreaterThan(40);
+    expect(lastRsi).toBeLessThan(65);
   });
 });

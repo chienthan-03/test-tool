@@ -101,6 +101,8 @@ export class StrategyEngine {
       newsId: signal.newsId,
       entryPrice: entry.close,
       atr: entry.atr,
+      stopLoss: entry.stopLoss,
+      takeProfit: entry.takeProfit,
       contextTimeframe: this.config.timeframes.context,
       entryTimeframe: this.config.timeframes.entry,
       createdAt: this.getNow(),

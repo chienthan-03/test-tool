@@ -58,7 +58,8 @@ describe('backtest-smoke integration', () => {
       downloadFrom,
       entryBars,
       40_000,
-      150,
+      8,
+      120,
     );
     await writeSyntheticKlines(
       cacheDir,
@@ -67,7 +68,8 @@ describe('backtest-smoke integration', () => {
       downloadFrom,
       contextBars,
       40_000,
-      600,
+      30,
+      400,
     );
   });
 

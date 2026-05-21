@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+import { loadEnvFile } from '../config/load-env.js';
+
+loadEnvFile();
+
 import { Command } from 'commander';
 import { registerBacktestCommand } from './commands/backtest.js';
 import { registerFeedsCommand } from './commands/feeds.js';

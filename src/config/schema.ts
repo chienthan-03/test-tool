@@ -25,7 +25,12 @@ export const AppConfigSchema = z.object({
     timeframes: z.object({ context: timeframeEnum, entry: timeframeEnum }).optional(),
     risk: z.object({ positionPercent: z.number().min(0.1).max(100) }).optional(),
   })).default({}),
-  timeframes: z.object({ context: timeframeEnum, entry: timeframeEnum }),
+  timeframes: z
+    .object({ context: timeframeEnum, entry: timeframeEnum })
+    .refine(
+      (t) => t.context !== t.entry,
+      'Elliott+Fib strategy requires different context and entry timeframes (e.g. 4h + 1h)',
+    ),
   feeds: z.array(FeedSchema).refine((f) => f.some((x) => x.enabled), 'At least one feed enabled'),
   sentiment: z.object({
     rules: z.object({
@@ -52,15 +57,31 @@ export const AppConfigSchema = z.object({
     }),
   }),
   strategy: z.object({
-    emaContextPeriod: z.number().int().positive(),
-    emaEntryPeriod: z.number().int().positive(),
     atrPeriod: z.number().int().positive(),
     minAtrPercent: z.number().positive(),
+    maxAtrPercent: z.number().positive().nullable().default(3.5),
     entry: z.object({
-      requireEmaConfirm: z.boolean(),
       waitForNextCandleClose: z.boolean(),
     }),
     onePositionPerSymbol: z.boolean(),
+    swing: z.object({
+      lookback: z.number().int().min(1).max(10),
+      minSwingCount: z.number().int().min(3).max(20),
+      minImpulsePercent: z.number().min(0),
+    }),
+    elliott: z.object({
+      allowSideways: z.boolean(),
+      contextRequireImpulse: z.boolean().default(false),
+    }),
+    fibonacci: z.object({
+      entryMin: z.number().min(0).max(1),
+      entryMax: z.number().min(0).max(1),
+      zoneTolerancePercent: z.number().min(0).max(0.5),
+      stopLevel: z.number().min(0).max(1),
+      targetExtension: z.number().min(1).max(3),
+      stopBelowSwing: z.boolean().default(true),
+      stopBufferPercent: z.number().min(0).max(0.05).default(0.002),
+    }),
   }),
   risk: z.object({
     positionPercent: z.number().min(0.1).max(100),

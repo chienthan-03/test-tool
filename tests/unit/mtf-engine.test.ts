@@ -1,62 +1,103 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { Candle } from '../../src/core/types.js';
 import { loadConfig } from '../../src/config/loader.js';
 import type { AppConfig } from '../../src/config/schema.js';
-import type { Candle } from '../../src/core/types.js';
 import { KlineStore } from '../../src/market/kline-store.js';
 import { MtfEngine } from '../../src/strategy/mtf-engine.js';
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const defaultConfigPath = join(projectRoot, 'config/default.yaml');
 
+const TF_MS: Record<string, number> = {
+  '1h': 3_600_000,
+  '4h': 14_400_000,
+};
+
 const makeCandle = (
   symbol: string,
   interval: string,
   index: number,
   close: number,
-  spread = 2,
+  high: number,
+  low: number,
 ): Candle => {
-  const openTime = new Date(`2026-05-01T00:${String(index % 60).padStart(2, '0')}:00.000Z`);
+  const tfMs = TF_MS[interval] ?? 3_600_000;
+  const openTime = new Date(Date.UTC(2026, 0, 1, index % 24, 0, 0));
   return {
     symbol,
     interval,
     openTime,
-    closeTime: new Date(openTime.getTime() + 3_600_000),
-    open: close - spread * 0.25,
-    high: close + spread,
-    low: close - spread,
+    closeTime: new Date(openTime.getTime() + tfMs),
+    open: close,
+    high,
+    low,
     close,
     volume: 100,
     isClosed: true,
   };
 };
 
-const pushTrend = (
+/** Build zigzag pivots with clear fractal highs/lows (lookback 3). */
+const pushZigzagPivots = (
   store: KlineStore,
   symbol: string,
   tf: string,
-  count: number,
-  startClose: number,
-  step: number,
-  spread = 2,
+  pivots: Array<{ price: number; type: 'high' | 'low' }>,
+  barsBetween = 9,
 ): void => {
-  for (let i = 0; i < count; i++) {
-    const close = startClose + step * i;
-    store.update(symbol, tf, makeCandle(symbol, tf, i, close, spread));
+  let index = 0;
+  for (const pivot of pivots) {
+    for (let b = 0; b < barsBetween; b++) {
+      const isPivot = b === Math.floor(barsBetween / 2);
+      const spread = 0.6;
+      let high = pivot.price + spread;
+      let low = pivot.price - spread;
+      let close = pivot.price;
+
+      if (isPivot && pivot.type === 'high') {
+        high = pivot.price + spread * 2;
+        low = pivot.price - spread * 0.4;
+        close = pivot.price + spread * 1.5;
+      } else if (isPivot && pivot.type === 'low') {
+        low = pivot.price - spread * 2;
+        high = pivot.price + spread * 0.4;
+        close = pivot.price - spread * 1.5;
+      }
+
+      store.update(symbol, tf, makeCandle(symbol, tf, index, close, high, low));
+      index += 1;
+    }
   }
 };
 
-describe('MtfEngine', () => {
+const bullishImpulsePivots = (): Array<{ price: number; type: 'high' | 'low' }> => [
+  { price: 100, type: 'low' },
+  { price: 108, type: 'high' },
+  { price: 104, type: 'low' },
+  { price: 118, type: 'high' },
+  { price: 110, type: 'low' },
+];
+
+const bearishImpulsePivots = (): Array<{ price: number; type: 'high' | 'low' }> => [
+  { price: 120, type: 'high' },
+  { price: 112, type: 'low' },
+  { price: 116, type: 'high' },
+  { price: 102, type: 'low' },
+  { price: 110, type: 'high' },
+];
+
+describe('MtfEngine (Elliott + Fibonacci)', () => {
   let config: AppConfig;
 
   beforeAll(() => {
     config = loadConfig(defaultConfigPath);
   });
 
-  it('bullish context allows long', () => {
+  it('bullish elliott context allows long', () => {
     const store = new KlineStore();
-    pushTrend(store, 'BTCUSDT', config.timeframes.context, 60, 100, 2, 3);
+    pushZigzagPivots(store, 'BTCUSDT', config.timeframes.context, bullishImpulsePivots(), 9);
 
     const engine = new MtfEngine(config, store);
     const result = engine.evaluateContext('BTCUSDT', 'long', 0.5);
@@ -64,26 +105,37 @@ describe('MtfEngine', () => {
     expect(result.allow).toBe(true);
   });
 
-  it('bearish blocks long', () => {
+  it('bearish elliott blocks long', () => {
     const store = new KlineStore();
-    pushTrend(store, 'BTCUSDT', config.timeframes.context, 60, 300, -2, 3);
+    pushZigzagPivots(store, 'BTCUSDT', config.timeframes.context, bearishImpulsePivots(), 9);
 
     const engine = new MtfEngine(config, store);
     const result = engine.evaluateContext('BTCUSDT', 'long', 0.9);
 
     expect(result.allow).toBe(false);
-    expect(result.reason).toBe('mtf_context_conflict');
+    expect(result.reason).toBe('elliott_context_conflict');
   });
 
-  it('entry confirm long when conditions met', () => {
+  it('entry confirms long in fib retrace zone with fib SL/TP', () => {
     const store = new KlineStore();
-    pushTrend(store, 'BTCUSDT', config.timeframes.entry, 30, 100, 1.5, 4);
+    const entryPivots = bullishImpulsePivots().slice(0, 4);
+    pushZigzagPivots(store, 'BTCUSDT', config.timeframes.entry, entryPivots, 9);
+
+    const tf = config.timeframes.entry;
+    const retraceClose = 111;
+    store.update(
+      'BTCUSDT',
+      tf,
+      makeCandle('BTCUSDT', tf, 999, retraceClose, retraceClose + 1.5, retraceClose - 1.5),
+    );
 
     const engine = new MtfEngine(config, store);
     const result = engine.evaluateEntry('BTCUSDT', 'long');
 
     expect(result.confirm).toBe(true);
-    expect(result.close).toBeGreaterThan(0);
-    expect(result.atr).toBeGreaterThan(0);
+    expect(result.stopLoss).toBeDefined();
+    expect(result.takeProfit).toBeDefined();
+    expect(result.stopLoss!).toBeLessThan(retraceClose);
+    expect(result.takeProfit!).toBeGreaterThan(retraceClose);
   });
 });

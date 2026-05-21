@@ -76,6 +76,8 @@ export interface TradeIntent {
   newsId: string;
   entryPrice: number;
   atr: number;
+  stopLoss?: number;
+  takeProfit?: number;
   contextTimeframe: string;
   entryTimeframe: string;
   createdAt: Date;

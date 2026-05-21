@@ -1,16 +1,9 @@
 import type { Command } from 'commander';
+import { parseStrictIsoDate, validateBacktestRange } from '../backtest-dates.js';
 import { loadConfigWithEnv } from '../../config/loader.js';
 import { runBacktest } from '../../execution/backtest-replayer.js';
 import { openDatabase } from '../../storage/db.js';
 import { migrate } from '../../storage/migrate.js';
-
-const parseIsoDate = (value: string, flag: string): Date => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    throw new Error(`Invalid ${flag} date: ${value}. Use ISO format (e.g. 2025-01-01).`);
-  }
-  return date;
-};
 
 export const registerBacktestCommand = (program: Command): void => {
   program
@@ -23,12 +16,14 @@ export const registerBacktestCommand = (program: Command): void => {
     .action(
       async (options: { from: string; to: string; config: string; mockSentiment?: boolean }) => {
         try {
-          const from = parseIsoDate(options.from, '--from');
-          const to = parseIsoDate(options.to, '--to');
+          const from = parseStrictIsoDate(options.from, '--from');
+          const to = parseStrictIsoDate(options.to, '--to');
 
           if (from.getTime() >= to.getTime()) {
             throw new Error('--from must be before --to');
           }
+
+          validateBacktestRange(from, to);
 
           const config = loadConfigWithEnv(options.config);
           const db = openDatabase(config.storage.sqlitePath);

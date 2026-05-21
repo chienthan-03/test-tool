@@ -55,13 +55,14 @@ const generateMockSignals = (
   let seq = 0;
 
   while (cursor <= to.getTime()) {
+    const direction: NewsSignal['direction'] = seq % 2 === 0 ? 'long' : 'short';
     for (const symbol of symbols) {
       signals.push({
         id: `mock-${seq}-${symbol}`,
         newsId: `mock-news-${seq}`,
         symbols: [symbol],
-        direction: 'long',
-        strength: 0.9,
+        direction,
+        strength: 0.85,
         expiresAt: new Date(cursor + intervalHours * 3_600_000),
         source: 'rule',
         createdAt: new Date(cursor),
@@ -180,8 +181,10 @@ export class BacktestReplayer {
     type TimedCandle = { candle: Candle; tf: string };
     const timeline: TimedCandle[] = [];
 
+    const timelineTfs = contextTf === entryTf ? [entryTf] : [contextTf, entryTf];
+
     for (const symbol of symbols) {
-      for (const tf of [contextTf, entryTf]) {
+      for (const tf of timelineTfs) {
         const candles = candlesByKey.get(`${symbol}|${tf}`) ?? [];
         for (const candle of candles) {
           if (candle.closeTime.getTime() <= to.getTime()) {
@@ -360,6 +363,7 @@ export const writeSyntheticKlines = async (
   barCount: number,
   startClose: number,
   step: number,
+  waveAmplitude = 0,
 ): Promise<void> => {
   await mkdir(cacheDir, { recursive: true });
   const tfMs = intervalToMs(interval);
@@ -368,16 +372,44 @@ export const writeSyntheticKlines = async (
   for (let i = 0; i < barCount; i++) {
     const openTime = new Date(from.getTime() + i * tfMs);
     const closeTime = new Date(openTime.getTime() + tfMs - 1);
-    const close = startClose + step * i;
-    const spread = Math.max(step * 2, 1);
+    const trend = startClose + step * i;
+    const spread = Math.max(trend * 0.003, 1);
+
+    let close = trend;
+    let high = close + spread;
+    let low = close - spread;
+
+    if (waveAmplitude > 0) {
+      const pivotCycle = 9;
+      const pivotBar = Math.floor(pivotCycle / 2);
+      const cycleIndex = i % pivotCycle;
+      const cycleNum = Math.floor(i / pivotCycle);
+      const isPivot = cycleIndex === pivotBar;
+      const pivotIsHigh = cycleNum % 2 === 0;
+
+      if (isPivot && pivotIsHigh) {
+        close = trend + waveAmplitude * 0.55;
+        high = close + spread * 2;
+        low = close - spread * 0.35;
+      } else if (isPivot) {
+        close = trend - waveAmplitude * 0.45;
+        low = close - spread * 2;
+        high = close + spread * 0.35;
+      } else {
+        close = trend + (cycleIndex < pivotBar ? spread * 0.2 : -spread * 0.15);
+        high = close + spread;
+        low = close - spread;
+      }
+    }
+
     candles.push({
       symbol,
       interval,
       openTime,
       closeTime,
       open: close - spread * 0.25,
-      high: close + spread,
-      low: close - spread,
+      high,
+      low,
       close,
       volume: 100,
       isClosed: true,
