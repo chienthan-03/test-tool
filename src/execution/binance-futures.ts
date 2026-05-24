@@ -4,6 +4,29 @@ import { buildSignedQuery } from './binance-sign.js';
 
 export type FuturesFetch = typeof fetch;
 
+type BinanceErrorBody = { code?: number; msg?: string };
+
+type JsonResponse = { json(): Promise<unknown> };
+
+const parseBinanceError = async (response: JsonResponse): Promise<BinanceErrorBody> => {
+  try {
+    return (await response.json()) as BinanceErrorBody;
+  } catch {
+    return {};
+  }
+};
+
+export class BinanceApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly code?: number,
+  ) {
+    super(message);
+    this.name = 'BinanceApiError';
+  }
+}
+
 type BalanceRow = {
   asset: string;
   availableBalance: string;
@@ -73,6 +96,7 @@ export class BinanceFuturesClient {
   private readonly apiSecret: string;
   private readonly recvWindow: number;
   private readonly fetchFn: FuturesFetch;
+  private timeOffsetMs = 0;
 
   constructor(
     baseUrl: string,
@@ -86,6 +110,25 @@ export class BinanceFuturesClient {
     this.apiSecret = apiSecret;
     this.recvWindow = recvWindow;
     this.fetchFn = fetchFn;
+  }
+
+  /** Offset = Binance serverTime - local Date.now(); applied to signed request timestamps. */
+  getTimeOffsetMs(): number {
+    return this.timeOffsetMs;
+  }
+
+  async syncServerTime(): Promise<number> {
+    const response = await this.fetchFn(`${this.baseUrl}/fapi/v1/time`);
+    if (!response.ok) {
+      throw new Error(`Binance time sync failed: HTTP ${response.status}`);
+    }
+    const body = (await response.json()) as { serverTime: number };
+    this.timeOffsetMs = body.serverTime - Date.now();
+    return this.timeOffsetMs;
+  }
+
+  private requestTimestamp(): number {
+    return Date.now() + this.timeOffsetMs;
   }
 
   async getBalance(): Promise<number> {
@@ -172,6 +215,20 @@ export class BinanceFuturesClient {
     await this.signedDelete('/fapi/v1/allOpenOrders', { symbol });
   }
 
+  async setMarginType(symbol: string, marginType: 'ISOLATED' | 'CROSSED'): Promise<void> {
+    await this.signedPost<Record<string, never>>('/fapi/v1/marginType', {
+      symbol,
+      marginType,
+    });
+  }
+
+  async setLeverage(symbol: string, leverage: number): Promise<void> {
+    await this.signedPost<{ leverage: number; maxNotionalValue: string }>(
+      '/fapi/v1/leverage',
+      { symbol, leverage },
+    );
+  }
+
   async getListenKey(): Promise<string> {
     const response = await this.fetchFn(`${this.baseUrl}/fapi/v1/listenKey`, {
       method: 'POST',
@@ -201,11 +258,20 @@ export class BinanceFuturesClient {
     return { ...params, recvWindow: this.recvWindow };
   }
 
+  private buildSignedRequestQuery(
+    params: Record<string, string | number>,
+  ): string {
+    return buildSignedQuery(
+      { ...this.signedParams(params), timestamp: this.requestTimestamp() },
+      this.apiSecret,
+    );
+  }
+
   private async signedGet<T>(
     path: string,
     params: Record<string, string | number> = {},
   ): Promise<T> {
-    const query = buildSignedQuery(this.signedParams(params), this.apiSecret);
+    const query = this.buildSignedRequestQuery(params);
     const url = `${this.baseUrl}${path}?${query}`;
     const response = await this.fetchFn(url, {
       method: 'GET',
@@ -213,7 +279,12 @@ export class BinanceFuturesClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Binance GET ${path} failed: HTTP ${response.status}`);
+      const body = await parseBinanceError(response);
+      throw new BinanceApiError(
+        body.msg ?? `Binance GET ${path} failed: HTTP ${response.status}`,
+        response.status,
+        body.code,
+      );
     }
 
     return response.json() as Promise<T>;
@@ -223,7 +294,7 @@ export class BinanceFuturesClient {
     path: string,
     params: Record<string, string | number>,
   ): Promise<T> {
-    const query = buildSignedQuery(this.signedParams(params), this.apiSecret);
+    const query = this.buildSignedRequestQuery(params);
     const url = `${this.baseUrl}${path}?${query}`;
     const response = await this.fetchFn(url, {
       method: 'POST',
@@ -231,7 +302,12 @@ export class BinanceFuturesClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Binance POST ${path} failed: HTTP ${response.status}`);
+      const body = await parseBinanceError(response);
+      throw new BinanceApiError(
+        body.msg ?? `Binance POST ${path} failed: HTTP ${response.status}`,
+        response.status,
+        body.code,
+      );
     }
 
     return response.json() as Promise<T>;
@@ -241,7 +317,7 @@ export class BinanceFuturesClient {
     path: string,
     params: Record<string, string | number>,
   ): Promise<void> {
-    const query = buildSignedQuery(this.signedParams(params), this.apiSecret);
+    const query = this.buildSignedRequestQuery(params);
     const url = `${this.baseUrl}${path}?${query}`;
     const response = await this.fetchFn(url, {
       method: 'DELETE',
@@ -249,7 +325,12 @@ export class BinanceFuturesClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Binance DELETE ${path} failed: HTTP ${response.status}`);
+      const body = await parseBinanceError(response);
+      throw new BinanceApiError(
+        body.msg ?? `Binance DELETE ${path} failed: HTTP ${response.status}`,
+        response.status,
+        body.code,
+      );
     }
   }
 }

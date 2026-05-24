@@ -68,6 +68,17 @@ const mockFetch = (): typeof fetch =>
       } as Response;
     }
 
+    if (url.includes('/fapi/v1/marginType') && method === 'POST') {
+      return { ok: true, json: async () => ({}) } as Response;
+    }
+
+    if (url.includes('/fapi/v1/leverage') && method === 'POST') {
+      return {
+        ok: true,
+        json: async () => ({ leverage: 5, maxNotionalValue: '1000000' }),
+      } as Response;
+    }
+
     return { ok: false, status: 404 } as Response;
   }) as typeof fetch;
 

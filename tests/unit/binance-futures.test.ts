@@ -15,6 +15,13 @@ const mockFetch = (handlers: {
     const url = String(input);
     const method = init?.method ?? 'GET';
 
+    if (url.includes('/fapi/v1/time')) {
+      return {
+        ok: true,
+        json: async () => ({ serverTime: Date.now() - 1000 }),
+      } as Response;
+    }
+
     if (url.includes('/fapi/v1/order') && method === 'POST') {
       return {
         ok: true,
@@ -51,10 +58,41 @@ const mockFetch = (handlers: {
       return { ok: true, json: async () => ({}) } as Response;
     }
 
+    if (url.includes('/fapi/v1/marginType') && method === 'POST') {
+      return { ok: true, json: async () => ({}) } as Response;
+    }
+
+    if (url.includes('/fapi/v1/leverage') && method === 'POST') {
+      return {
+        ok: true,
+        json: async () => ({ leverage: 5, maxNotionalValue: '1000000' }),
+      } as Response;
+    }
+
     return { ok: false, status: 404 } as Response;
   }) as typeof fetch;
 
 describe('BinanceFuturesClient', () => {
+  it('syncServerTime stores offset between Binance server and local clock', async () => {
+    const localNow = Date.now();
+    vi.spyOn(Date, 'now').mockReturnValue(localNow);
+    const fetchFn = vi.fn(async (input) => {
+      const url = String(input);
+      if (url.includes('/fapi/v1/time')) {
+        return {
+          ok: true,
+          json: async () => ({ serverTime: localNow - 1500 }),
+        } as Response;
+      }
+      return { ok: false, status: 404 } as Response;
+    }) as typeof fetch;
+
+    const client = new BinanceFuturesClient(BASE, API_KEY, API_SECRET, RECV_WINDOW, fetchFn);
+    await expect(client.syncServerTime()).resolves.toBe(-1500);
+    expect(client.getTimeOffsetMs()).toBe(-1500);
+    vi.mocked(Date.now).mockRestore();
+  });
+
   it('placeMarketOrder posts signed MARKET order and returns response', async () => {
     const orderResponse = {
       orderId: 42,
@@ -174,5 +212,29 @@ describe('BinanceFuturesClient', () => {
     expect(postCall?.[1]?.method).toBe('POST');
     expect(putCall?.[1]?.method).toBe('PUT');
     expect(String(postCall?.[0])).not.toContain('signature=');
+  });
+
+  it('setMarginType posts ISOLATED', async () => {
+    const fetchFn = mockFetch({});
+    const client = new BinanceFuturesClient(BASE, API_KEY, API_SECRET, RECV_WINDOW, fetchFn);
+
+    await client.setMarginType('BTCUSDT', 'ISOLATED');
+
+    const url = String(vi.mocked(fetchFn).mock.calls[0]?.[0]);
+    expect(url).toContain('/fapi/v1/marginType');
+    expect(url).toContain('symbol=BTCUSDT');
+    expect(url).toContain('marginType=ISOLATED');
+  });
+
+  it('setLeverage posts leverage value', async () => {
+    const fetchFn = mockFetch({});
+    const client = new BinanceFuturesClient(BASE, API_KEY, API_SECRET, RECV_WINDOW, fetchFn);
+
+    await client.setLeverage('BTCUSDT', 5);
+
+    const url = String(vi.mocked(fetchFn).mock.calls[0]?.[0]);
+    expect(url).toContain('/fapi/v1/leverage');
+    expect(url).toContain('symbol=BTCUSDT');
+    expect(url).toContain('leverage=5');
   });
 });

@@ -3,6 +3,19 @@ import { z } from 'zod';
 const timeframeEnum = z.enum(['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '1d']);
 const futuresSymbol = z.string().regex(/^[A-Z0-9]+USDT$/);
 
+export const MarginModeSchema = z.enum(['isolated', 'cross']);
+
+export const MarginConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  mode: MarginModeSchema.default('isolated'),
+  leverage: z.number().int().min(1).max(125).default(5),
+});
+
+export const SymbolMarginOverrideSchema = z.object({
+  mode: MarginModeSchema.optional(),
+  leverage: z.number().int().min(1).max(125).optional(),
+});
+
 export const FeedSchema = z.object({
   id: z.string().min(1),
   url: z.string().url(),
@@ -24,6 +37,7 @@ export const AppConfigSchema = z.object({
   symbolOverrides: z.record(z.string(), z.object({
     timeframes: z.object({ context: timeframeEnum, entry: timeframeEnum }).optional(),
     risk: z.object({ positionPercent: z.number().min(0.1).max(100) }).optional(),
+    margin: SymbolMarginOverrideSchema.optional(),
   })).default({}),
   timeframes: z
     .object({ context: timeframeEnum, entry: timeframeEnum })
@@ -98,6 +112,11 @@ export const AppConfigSchema = z.object({
     mainnetWsUrl: z.string().url(),
     recvWindow: z.number().int(),
     wsReconnectMaxRetries: z.number().int(),
+    margin: MarginConfigSchema.default({
+      enabled: true,
+      mode: 'isolated',
+      leverage: 5,
+    }),
     circuitBreaker: z.object({
       enabled: z.boolean(),
       maxFailures: z.number().int(),

@@ -78,6 +78,9 @@ File mặc định: `config/default.yaml`. Các trường quan trọng:
 | `sentiment.llm` | `enabled`, `model`, `maxCallsPerHour`, `minConfidence` |
 | `risk.positionPercent` | % balance mỗi lệnh (mặc định `2`) |
 | `risk.slAtrMultiplier` / `tpAtrMultiplier` | SL/TP theo ATR |
+| `binance.margin.enabled` | Bật/tắt set margin/leverage lúc connect (mặc định `true`) |
+| `binance.margin.mode` | `isolated` hoặc `cross` (mặc định `isolated`) |
+| `binance.margin.leverage` | Đòn bẩy 1–125 (mặc định `5`); bot cảnh báo nếu > 10 |
 | `binance.*` | URL testnet/mainnet, circuit breaker |
 | `sim.*` | Balance ảo, phí, slippage cho `--mode sim` |
 | `storage.sqlitePath` | DB tin, signal, feed status |
@@ -96,6 +99,23 @@ sentiment:
   llm:
     enabled: false
 ```
+
+Margin / leverage (áp dụng lúc `connect` trên testnet/live; sim/backtest không đổi):
+
+```yaml
+binance:
+  margin:
+    enabled: true
+    mode: isolated
+    leverage: 5
+
+symbolOverrides:
+  BTCUSDT:
+    margin:
+      leverage: 3
+```
+
+Đặt `binance.margin.enabled: false` nếu bạn muốn giữ cấu hình margin/leverage thủ công trên sàn.
 
 ---
 
@@ -195,7 +215,7 @@ Nếu `allowLive: false`, lệnh live thoát với: `Refusing live mode: set all
 - **Độ trễ RSS:** tin có thể đến sau khi giá đã phản ứng; poll interval 90–120s.
 - **Lỗi LLM / rate limit:** gateway có giới hạn `maxCallsPerHour`; lỗi → fallback rule hoặc bỏ qua tùy ngữ cảnh.
 - **Quá mức exposure:** mỗi vị thế dùng full `positionPercent` (vd. nhiều lệnh 2% → tổng notional có thể vượt ý muốn).
-- **Đòn bẩy:** bot **không** set leverage; bạn phải cấu hình margin/leverage trên sàn.
+- **Đòn bẩy:** khi `binance.margin.enabled: true`, bot set margin mode và leverage lúc khởi động (testnet/live); đặt `enabled: false` để dùng cấu hình thủ công trên sàn. `positionPercent` vẫn là % notional balance, không phụ thuộc leverage.
 - **Circuit breaker:** sau lỗi API lặp lại, chặn lệnh mới — **không** đóng vị thế đang mở.
 - **Tắt bot (SIGINT):** log vị thế mở, không auto-close — quản lý thủ công trên Binance.
 

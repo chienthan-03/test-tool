@@ -16,6 +16,13 @@ describe('config-loader', () => {
     expect(config.symbols).toContain('BTCUSDT');
   });
 
+  it('loads binance.margin defaults', () => {
+    const config = loadConfig(defaultConfigPath);
+    expect(config.binance.margin.enabled).toBe(true);
+    expect(config.binance.margin.mode).toBe('isolated');
+    expect(config.binance.margin.leverage).toBe(5);
+  });
+
   it('rejects empty symbols', () => {
     const parsed = parse(readFileSync(defaultConfigPath, 'utf8')) as Record<string, unknown>;
     parsed.symbols = [];

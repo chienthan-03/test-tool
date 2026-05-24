@@ -1,6 +1,6 @@
 mode: sim
 
-allowLive: false
+allowLive: true
 
 symbols:
   - BTCUSDT
@@ -98,7 +98,7 @@ strategy:
     stopBufferPercent: 0.002
 
 risk:
-  positionPercent: 2
+  positionPercent: 15
   minNotionalUsdt: 5
   maxNotionalUsdt: null
   slAtrMultiplier: 2.0
@@ -112,12 +112,18 @@ binance:
   mainnetWsUrl: wss://fstream.binance.com
   recvWindow: 5000
   wsReconnectMaxRetries: 10
+  margin:
+    enabled: true
+    mode: isolated
+    leverage: 5
   circuitBreaker:
     enabled: true
     maxFailures: 3
     windowMs: 300000
 
 sim:
+  leverage: 6
+  marginMode: isolated
   initialBalanceUsdt: 10000
   feeRate: 0.0004
   slippageBps: 5

@@ -68,6 +68,17 @@ const mockFetch = (): typeof fetch =>
       } as Response;
     }
 
+    if (url.includes('/fapi/v1/marginType') && method === 'POST') {
+      return { ok: true, json: async () => ({}) } as Response;
+    }
+
+    if (url.includes('/fapi/v1/leverage') && method === 'POST') {
+      return {
+        ok: true,
+        json: async () => ({ leverage: 5, maxNotionalValue: '1000000' }),
+      } as Response;
+    }
+
     return { ok: false, status: 404 } as Response;
   }) as typeof fetch;
 
@@ -144,6 +155,29 @@ describe('BinanceTestnetAdapter', () => {
     expect(slId).toBe('100');
     expect(tpId).toBe('101');
 
+    await adapter.disconnect();
+  });
+
+  it('connect applies margin settings when enabled', async () => {
+    const fetchFn = mockFetch();
+    const adapter = new BinanceTestnetAdapter(config, 'k', 's', {}, fetchFn);
+    await adapter.connect();
+    const urls = vi.mocked(fetchFn).mock.calls.map((c) => String(c[0]));
+    expect(urls.some((u) => u.includes('/fapi/v1/marginType'))).toBe(true);
+    expect(urls.some((u) => u.includes('/fapi/v1/leverage'))).toBe(true);
+    await adapter.disconnect();
+  });
+
+  it('connect skips margin API when disabled', async () => {
+    const cfg = {
+      ...config,
+      binance: { ...config.binance, margin: { ...config.binance.margin, enabled: false } },
+    };
+    const fetchFn = mockFetch();
+    const adapter = new BinanceTestnetAdapter(cfg, 'k', 's', {}, fetchFn);
+    await adapter.connect();
+    const urls = vi.mocked(fetchFn).mock.calls.map((c) => String(c[0]));
+    expect(urls.some((u) => u.includes('/fapi/v1/marginType'))).toBe(false);
     await adapter.disconnect();
   });
 });

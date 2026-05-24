@@ -9,9 +9,12 @@ import type {
   PositionClosedEvent,
 } from '../core/types.js';
 import { createLogger } from '../core/logger.js';
-import { getServerTime } from '../market/binance-rest.js';
-import { BinanceFuturesClient, type FuturesFetch } from './binance-futures.js';
+import { BinanceApiError, BinanceFuturesClient, type FuturesFetch } from './binance-futures.js';
 import type { ExecutionAdapter } from './adapter.interface.js';
+import {
+  resolveSymbolMargin,
+  toBinanceMarginType,
+} from './margin-settings.js';
 import {
   getSymbolFilters,
   loadExchangeInfo,
@@ -20,6 +23,9 @@ import {
 } from './exchange-info.js';
 
 const RECONCILE_INTERVAL_MS = 30_000;
+const MARGIN_ALREADY_SET_CODE = -4046;
+const TIMESTAMP_OUT_OF_SYNC_CODE = -1021;
+const HIGH_LEVERAGE_WARN_THRESHOLD = 10;
 
 export type BinanceFuturesCallbacks = {
   onFill?: (fill: Fill) => void;
@@ -69,13 +75,15 @@ export class BinanceFuturesAdapter implements ExecutionAdapter {
 
   async connect(): Promise<void> {
     try {
-      await getServerTime(this.baseUrl);
+      const offsetMs = await this.client.syncServerTime();
+      this.log.info({ offsetMs, mode: this.mode }, 'binance_server_time_synced');
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       this.log.warn({ err: message, mode: this.mode }, 'binance_server_time_sync_skipped');
     }
 
     await loadExchangeInfo(this.baseUrl, this.config.symbols);
+    await this.applyMarginSettings();
     this.connected = true;
 
     await this.reconcile();
@@ -259,6 +267,44 @@ export class BinanceFuturesAdapter implements ExecutionAdapter {
     }
   }
 
+  private async applyMarginSettings(): Promise<void> {
+    const marginConfig = this.config.binance.margin;
+    if (!marginConfig.enabled) {
+      this.log.debug({ mode: this.mode }, 'margin_config_disabled');
+      return;
+    }
+
+    for (const symbol of this.config.symbols) {
+      const resolved = resolveSymbolMargin(this.config, symbol);
+
+      try {
+        await this.callApi(() =>
+          this.client.setMarginType(symbol, toBinanceMarginType(resolved.mode)),
+        );
+      } catch (err) {
+        if (err instanceof BinanceApiError && err.code === MARGIN_ALREADY_SET_CODE) {
+          this.log.debug({ symbol }, 'margin_type_already_set');
+        } else {
+          this.log.warn(
+            { symbol, err: err instanceof Error ? err.message : String(err) },
+            'margin_type_apply_failed',
+          );
+        }
+      }
+
+      await this.callApi(() => this.client.setLeverage(symbol, resolved.leverage));
+
+      if (resolved.leverage > HIGH_LEVERAGE_WARN_THRESHOLD) {
+        this.log.warn({ symbol, leverage: resolved.leverage }, 'high_leverage_configured');
+      }
+
+      this.log.info(
+        { symbol, mode: resolved.mode, leverage: resolved.leverage },
+        'margin_settings_applied',
+      );
+    }
+  }
+
   private assertCircuitClosed(action: string): void {
     if (this.circuitBreaker.isOpen()) {
       this.log.warn({ action, mode: this.mode }, 'circuit_breaker_halt');
@@ -266,12 +312,25 @@ export class BinanceFuturesAdapter implements ExecutionAdapter {
     }
   }
 
-  private async callApi<T>(fn: () => Promise<T>): Promise<T> {
+  private async callApi<T>(fn: () => Promise<T>, retried = false): Promise<T> {
     try {
       const result = await fn();
       this.circuitBreaker.recordSuccess();
       return result;
     } catch (err) {
+      if (
+        !retried &&
+        err instanceof BinanceApiError &&
+        err.code === TIMESTAMP_OUT_OF_SYNC_CODE
+      ) {
+        try {
+          const offsetMs = await this.client.syncServerTime();
+          this.log.info({ offsetMs, mode: this.mode }, 'binance_server_time_resynced');
+          return this.callApi(fn, true);
+        } catch {
+          // fall through to failure handling
+        }
+      }
       this.circuitBreaker.recordFailure();
       throw err;
     }
