@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "export-trades-review": "tsx scripts/export-trades-review.ts"
   },
   "engines": {
     "node": ">=20"
