@@ -59,12 +59,12 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 03-01: Define sentiment experiment grid (configs to test)
-- [ ] 03-02: Run grid on BTC/ETH baseline period
-- [ ] 03-03: Analyze false signal patterns (manual review sample)
-- [ ] 03-04: LLM on/off comparison if enabled
-- [ ] 03-05: Recommend default sentiment preset
-- [ ] 03-06: Document findings for Phase 6
+- [x] 03-01: Define sentiment experiment grid (configs to test)
+- [x] 03-02: Run grid on BTC/ETH baseline period
+- [x] 03-03: Analyze false signal patterns (manual review sample)
+- [x] 03-04: LLM on/off comparison if enabled
+- [x] 03-05: Recommend default sentiment preset
+- [x] 03-06: Document findings for Phase 6
 
 ### Phase 4: MTF Entry Alignment Research
 **Goal**: Test MTF/Elliott/Fib/swing constraints that improve entries (timing vs noise).

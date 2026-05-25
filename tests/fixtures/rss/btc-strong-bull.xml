@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Research Fixture</title>
+    <link>https://fixture.local</link>
+    <description>High-impact bullish BTC/ETH items (macro + etf tags) for sentiment backtests</description>
+    <item>
+      <title>Bitcoin rally accelerates as Fed and CPI data support ETF approval inflow surge</title>
+      <link>https://fixture.local/btc-strong-bull</link>
+      <description>Traders cite partnership deals and rate cut hopes as Powell commentary lifts BTC after record approval and rally momentum.</description>
+      <pubDate>Mon, 20 May 2026 12:00:00 GMT</pubDate>
+      <guid>https://fixture.local/btc-strong-bull</guid>
+    </item>
+    <item>
+      <title>Ethereum surges on ETF inflow rally as FOMC holds and traders pile in</title>
+      <link>https://fixture.local/eth-strong-bull</link>
+      <description>Strong approval narrative and partnership headlines lift ETH alongside Bitcoin amid interest rate optimism.</description>
+      <pubDate>Mon, 20 May 2026 12:30:00 GMT</pubDate>
+      <guid>https://fixture.local/eth-strong-bull</guid>
+    </item>
+  </channel>
+</rss>

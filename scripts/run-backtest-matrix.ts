@@ -10,6 +10,7 @@ import { runBacktest } from '../src/execution/backtest-replayer.js';
 import type { BacktestReport } from '../src/core/types.js';
 import { openDatabase } from '../src/storage/db.js';
 import { migrate } from '../src/storage/migrate.js';
+import { seedSignalsFromConfigPath } from './lib/seed-signals-from-fixtures.js';
 
 loadEnvFile();
 
@@ -23,6 +24,8 @@ export type MatrixManifest = {
   to: string;
   mockSentiment: boolean;
   experimentsDir: string;
+  seedFromFixtures?: boolean;
+  seedRepeat?: number;
   runs: MatrixRunSpec[];
 };
 
@@ -62,6 +65,8 @@ export const parseMatrixManifest = (raw: unknown, matrixPath: string): MatrixMan
   const mockSentiment = m.mockSentiment;
   const experimentsDir =
     typeof m.experimentsDir === 'string' ? m.experimentsDir : './data/reports/experiments';
+  const seedFromFixtures = m.seedFromFixtures === true;
+  const seedRepeat = typeof m.seedRepeat === 'number' ? m.seedRepeat : 30;
   const runs = m.runs;
 
   if (typeof from !== 'string' || typeof to !== 'string') {
@@ -95,6 +100,8 @@ export const parseMatrixManifest = (raw: unknown, matrixPath: string): MatrixMan
     to,
     mockSentiment,
     experimentsDir,
+    seedFromFixtures,
+    seedRepeat,
     runs: parsedRuns,
   };
 };
@@ -171,11 +178,47 @@ export const runBacktestMatrix = async (
     }
 
     config.backtest.reportDir = join(experimentsDir, run.id);
-    const dbPath = join(tmpDir, `${run.id}.db`);
+    const dbPath = manifest.seedFromFixtures
+      ? join(experimentsDir, `${run.id}-signals.db`)
+      : join(tmpDir, `${run.id}.db`);
     await rm(dbPath, { force: true });
 
+    if (manifest.seedFromFixtures && !manifest.mockSentiment) {
+      const discardsPath = join(experimentsDir, 'discards.jsonl');
+      console.error(`[${run.id}] seeding signals from fixtures (repeat=${manifest.seedRepeat ?? 30})...`);
+      const seedResult = await seedSignalsFromConfigPath({
+        configPath: run.config,
+        dbPath,
+        from: manifest.from,
+        to: manifest.to,
+        repeat: manifest.seedRepeat ?? 30,
+        noLlm: !config.sentiment.llm.enabled,
+        discardsPath,
+      });
+      console.error(
+        `[${run.id}] seeded signals=${seedResult.signalsInserted} discards=${seedResult.discards}`,
+      );
+      if (seedResult.signalsInserted === 0) {
+        summaries.push({
+          id: run.id,
+          config: run.config,
+          configSha256,
+          totalTrades: 0,
+          wins: 0,
+          losses: 0,
+          winRate: 0,
+          totalPnlUsdt: 0,
+          maxDrawdownPct: 0,
+          error: 'seed produced zero signals',
+        });
+        continue;
+      }
+    }
+
     const db = openDatabase(dbPath);
-    migrate(db);
+    if (!manifest.seedFromFixtures) {
+      migrate(db);
+    }
 
     try {
       console.error(`[${run.id}] running backtest...`);

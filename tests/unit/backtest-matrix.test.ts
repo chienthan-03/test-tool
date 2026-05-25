@@ -21,6 +21,22 @@ describe('parseMatrixManifest', () => {
     expect(manifest.runs[1]?.config).toContain('stricter-min-strength');
   });
 
+  it('parses optional seedFromFixtures and seedRepeat', () => {
+    const manifest = parseMatrixManifest(
+      {
+        from: '2024-10-01',
+        to: '2024-12-31',
+        mockSentiment: false,
+        seedFromFixtures: true,
+        seedRepeat: 10,
+        runs: [{ id: 'a', config: 'c.yaml' }],
+      },
+      'test',
+    );
+    expect(manifest.seedFromFixtures).toBe(true);
+    expect(manifest.seedRepeat).toBe(10);
+  });
+
   it('rejects empty runs', () => {
     expect(() =>
       parseMatrixManifest(

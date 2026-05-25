@@ -14,7 +14,9 @@
     "test:coverage": "vitest run --coverage",
     "lint": "tsc --noEmit",
     "export-trades-review": "tsx scripts/export-trades-review.ts",
-    "backtest-matrix": "tsx scripts/run-backtest-matrix.ts"
+    "backtest-matrix": "tsx scripts/run-backtest-matrix.ts",
+    "seed-signals": "tsx scripts/seed-signals-from-fixtures.ts",
+    "export-signals-review": "tsx scripts/export-signals-review.ts"
   },
   "engines": {
     "node": ">=20"

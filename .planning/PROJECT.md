@@ -25,7 +25,8 @@ A Node.js CLI bot that trades Binance USDⓈ-M Futures from crypto RSS news sent
 ### Active
 
 - [ ] **Research phase:** Document current entry path and baseline metrics (win rate, trade count) per mode using backtest + DB trade export
-- [ ] **Filter experiments:** Compare sentiment thresholds, MTF alignment rules, and cooldown/position limits via backtest matrix—not ad-hoc config tweaks (see `.planning/phases/02-backtest-experiments/EXPERIMENT-PROTOCOL.md`)
+- [ ] **Filter experiments:** Compare MTF alignment rules and cooldown/position limits via backtest matrix (sentiment grid done — see `.planning/phases/03-sentiment-filters/`)
+- [x] **Sentiment filter research (Phase 3):** Fixture matrix + recommendation → `config/experiments/sentiment-recommended.yaml` (`llm.enabled: false` pending Phase 6 merge)
 - [ ] **Higher-quality entries:** Implement winning filter set(s) in code/config with clear rationale tied to research findings
 - [ ] **Symbol expansion:** Add top alts (SOLUSDT, BNBUSDT, XRPUSDT) to whitelist, RSS mapping, and kline coverage—same Binance Futures stack
 - [ ] **Review workflow:** Make manual trade review practical (structured logs/DB fields or export) to judge “win rate improved”
@@ -65,6 +66,7 @@ A Node.js CLI bot that trades Binance USDⓈ-M Futures from crypto RSS news sent
 | Manual trade review as primary metric | User-selected; aligns with operational validation | — Pending |
 | No UI / no new exchange / no ML training | Explicit v1 boundaries | — Pending |
 | GSD workflow: YOLO + comprehensive depth + parallel execution | User preference for planning/execution style | — Pending |
+| Sentiment preset (Phase 3) | `sentiment-no-llm` / `sentiment-recommended.yaml` | Matrix + discard analysis; identical metrics on fixtures | — Pending validation in Phase 6 |
 
 ---
-*Last updated: 2026-05-25 after initialization*
+*Last updated: 2026-05-25 after Phase 3 execution*

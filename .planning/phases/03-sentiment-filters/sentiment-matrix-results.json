@@ -1,0 +1,38 @@
+{
+  "matrix": "config/experiments/sentiment-matrix.yaml",
+  "from": "2024-10-01",
+  "to": "2024-12-31",
+  "mockSentiment": false,
+  "executedAt": "2026-05-25T08:29:31.568Z",
+  "note": "All four presets produced identical backtest metrics (2 trades, 0% win rate). Seed path does not invoke LLM; fixture strong-signals all pass minStrength 0.5 and 0.65.",
+  "runs": [
+    {
+      "id": "sentiment-baseline",
+      "totalTrades": 2,
+      "winRate": 0,
+      "totalPnlUsdt": -50.40075998447953,
+      "signalsSeeded": 60
+    },
+    {
+      "id": "sentiment-high-min-strength",
+      "totalTrades": 2,
+      "winRate": 0,
+      "totalPnlUsdt": -50.40075998447953,
+      "signalsSeeded": 60
+    },
+    {
+      "id": "sentiment-high-threshold-llm",
+      "totalTrades": 2,
+      "winRate": 0,
+      "totalPnlUsdt": -50.40075998447953,
+      "signalsSeeded": 60
+    },
+    {
+      "id": "sentiment-no-llm",
+      "totalTrades": 2,
+      "winRate": 0,
+      "totalPnlUsdt": -50.40075998447953,
+      "signalsSeeded": 60
+    }
+  ]
+}

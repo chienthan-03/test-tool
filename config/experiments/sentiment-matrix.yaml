@@ -1,0 +1,15 @@
+from: "2024-10-01"
+to: "2024-12-31"
+mockSentiment: false
+seedFromFixtures: true
+seedRepeat: 30
+experimentsDir: ./data/reports/experiments/sentiment-phase3
+runs:
+  - id: sentiment-baseline
+    config: config/experiments/sentiment-baseline.yaml
+  - id: sentiment-high-min-strength
+    config: config/experiments/sentiment-high-min-strength.yaml
+  - id: sentiment-high-threshold-llm
+    config: config/experiments/sentiment-high-threshold-llm.yaml
+  - id: sentiment-no-llm
+    config: config/experiments/sentiment-no-llm.yaml
