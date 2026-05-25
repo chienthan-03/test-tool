@@ -1,0 +1,21 @@
+{
+  "config_path": "config/default.yaml",
+  "from": "2024-10-01",
+  "to": "2024-12-31",
+  "symbols": ["BTCUSDT", "ETHUSDT"],
+  "recorded_at": "2026-05-25T00:00:00.000Z",
+  "runs": [
+    {
+      "label": "mock_sentiment",
+      "mock_sentiment": true,
+      "metrics": {
+        "totalTrades": 25,
+        "wins": 8,
+        "losses": 17,
+        "winRate": 0.32,
+        "totalPnlUsdt": 288.29547279487065,
+        "maxDrawdownPct": 2.294036096712605
+      }
+    }
+  ]
+}
