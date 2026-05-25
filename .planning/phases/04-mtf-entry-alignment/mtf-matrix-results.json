@@ -1,0 +1,59 @@
+{
+  "matrix": "config/experiments/mtf-matrix.yaml",
+  "from": "2024-10-01",
+  "to": "2024-12-31",
+  "mockSentiment": true,
+  "phase1Baseline": { "totalTrades": 25, "winRate": 0.32, "totalPnlUsdt": 288.29547279487065 },
+  "executedAt": "2026-05-25T08:42:06.912Z",
+  "winner": "mtf-tighter-fib",
+  "runs": [
+    {
+      "id": "mtf-baseline",
+      "totalTrades": 25,
+      "winRate": 0.32,
+      "totalPnlUsdt": 288.29547279487065,
+      "maxDrawdownPct": 2.294036096712605,
+      "overFiltered": false
+    },
+    {
+      "id": "mtf-tighter-fib",
+      "totalTrades": 22,
+      "winRate": 0.36363636363636365,
+      "totalPnlUsdt": 358.2965148479986,
+      "maxDrawdownPct": 1.687791516777579,
+      "overFiltered": false
+    },
+    {
+      "id": "mtf-require-impulse",
+      "totalTrades": 5,
+      "winRate": 0.2,
+      "totalPnlUsdt": 100.31066298120754,
+      "maxDrawdownPct": 1.3344982660951246,
+      "overFiltered": true
+    },
+    {
+      "id": "mtf-higher-min-atr",
+      "totalTrades": 25,
+      "winRate": 0.32,
+      "totalPnlUsdt": 288.29547279487065,
+      "maxDrawdownPct": 2.294036096712605,
+      "overFiltered": false
+    },
+    {
+      "id": "mtf-no-wait-candle",
+      "totalTrades": 25,
+      "winRate": 0.32,
+      "totalPnlUsdt": 288.29547279487065,
+      "maxDrawdownPct": 2.294036096712605,
+      "overFiltered": false
+    },
+    {
+      "id": "mtf-stricter-swing",
+      "totalTrades": 25,
+      "winRate": 0.32,
+      "totalPnlUsdt": 288.29547279487065,
+      "maxDrawdownPct": 2.294036096712605,
+      "overFiltered": false
+    }
+  ]
+}

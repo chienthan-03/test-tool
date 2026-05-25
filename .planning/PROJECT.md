@@ -67,6 +67,7 @@ A Node.js CLI bot that trades Binance USDⓈ-M Futures from crypto RSS news sent
 | No UI / no new exchange / no ML training | Explicit v1 boundaries | — Pending |
 | GSD workflow: YOLO + comprehensive depth + parallel execution | User preference for planning/execution style | — Pending |
 | Sentiment preset (Phase 3) | `sentiment-no-llm` / `sentiment-recommended.yaml` | Matrix + discard analysis; identical metrics on fixtures | — Pending validation in Phase 6 |
+| MTF preset (Phase 4) | `mtf-tighter-fib` / `mtf-recommended.yaml` | Mock matrix: 36.4% win, 22 trades vs 32%/25 baseline | — Pending Phase 6 merge |
 
 ---
 *Last updated: 2026-05-25 after Phase 3 execution*

@@ -1,0 +1,17 @@
+from: "2024-10-01"
+to: "2024-12-31"
+mockSentiment: true
+experimentsDir: ./data/reports/experiments/mtf-phase4
+runs:
+  - id: mtf-baseline
+    config: config/experiments/mtf-baseline.yaml
+  - id: mtf-tighter-fib
+    config: config/experiments/mtf-tighter-fib.yaml
+  - id: mtf-require-impulse
+    config: config/experiments/mtf-require-impulse.yaml
+  - id: mtf-higher-min-atr
+    config: config/experiments/mtf-higher-min-atr.yaml
+  - id: mtf-no-wait-candle
+    config: config/experiments/mtf-no-wait-candle.yaml
+  - id: mtf-stricter-swing
+    config: config/experiments/mtf-stricter-swing.yaml

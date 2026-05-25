@@ -74,13 +74,13 @@ Plans:
 **Plans**: 7 plans
 
 Plans:
-- [ ] 04-01: Document current MTF entry rules and gaps
-- [ ] 04-02: Hypothesis list (alignment strictness, pending signals, etc.)
-- [ ] 04-03: Backtest experiments per hypothesis
-- [ ] 04-04: Compare context/entry timeframe variants if needed
-- [ ] 04-05: Manual review of worst/best trades from samples
-- [ ] 04-06: Recommend technical gate preset
-- [ ] 04-07: Handoff doc for Phase 6
+- [x] 04-01: Document current MTF entry rules and gaps
+- [x] 04-02: Hypothesis list (alignment strictness, pending signals, etc.)
+- [x] 04-03: Backtest experiments per hypothesis
+- [x] 04-04: Compare context/entry timeframe variants if needed
+- [x] 04-05: Manual review of worst/best trades from samples
+- [x] 04-06: Recommend technical gate preset
+- [x] 04-07: Handoff doc for Phase 6
 
 ### Phase 5: Symbol Expansion
 **Goal**: Add SOLUSDT, BNBUSDT, XRPUSDT to symbols, symbol mapper, and kline data paths.

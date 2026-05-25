@@ -1,0 +1,11 @@
+from: "2024-10-01"
+to: "2024-12-31"
+mockSentiment: true
+experimentsDir: ./data/reports/experiments/mtf-phase4-timeframes
+runs:
+  - id: mtf-baseline-1d-4h
+    config: config/experiments/mtf-baseline.yaml
+  - id: mtf-tf-4h-1h
+    config: config/experiments/mtf-tf-4h-1h.yaml
+  - id: mtf-tf-1d-1h
+    config: config/experiments/mtf-tf-1d-1h.yaml
