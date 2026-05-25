@@ -1,0 +1,2 @@
+id,mode,symbol,side,quantity,entry_price,exit_price,stop_loss,take_profit,pnl_usdt,fees_usdt,news_id,news_signal_id,opened_at,closed_at,setup_quality,news_quality,mtf_aligned,would_take_again,failure_category,notes
+# example-loser,sim,BTCUSDT,BUY,0.01,95000,94000,93500,98000,-10,0.5,news-1,sig-1,2024-10-15T12:00:00.000Z,2024-10-16T12:00:00.000Z,2,2,n,n,bad_timing,Entry before 4h confirm fully aligned
