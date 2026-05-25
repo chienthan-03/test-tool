@@ -33,7 +33,7 @@ From `baseline-backtest.json` (mock_sentiment, 2024-10-01 → 2024-12-31):
 
 ## Hypotheses for Phase 2–4
 
-1. **Phase 2:** Experiment harness to compare configs on same date range
+1. **Phase 2:** Experiment harness — `npm run backtest-matrix` (see `EXPERIMENT-PROTOCOL.md` in phase 02 dir)
 2. **Phase 3:** Tighten `minStrength` / `thresholdLLM` once real `news_signals` backtest runs
 3. **Phase 4:** Stricter MTF/Fib confirm — likely highest leverage given mock baseline
 4. **Phase 5:** SOL/BNB/XRP — more symbols after filters proven on BTC/ETH

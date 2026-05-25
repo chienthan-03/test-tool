@@ -25,7 +25,7 @@ A Node.js CLI bot that trades Binance USDⓈ-M Futures from crypto RSS news sent
 ### Active
 
 - [ ] **Research phase:** Document current entry path and baseline metrics (win rate, trade count) per mode using backtest + DB trade export
-- [ ] **Filter experiments:** Compare sentiment thresholds, MTF alignment rules, and cooldown/position limits via backtest matrix—not ad-hoc config tweaks
+- [ ] **Filter experiments:** Compare sentiment thresholds, MTF alignment rules, and cooldown/position limits via backtest matrix—not ad-hoc config tweaks (see `.planning/phases/02-backtest-experiments/EXPERIMENT-PROTOCOL.md`)
 - [ ] **Higher-quality entries:** Implement winning filter set(s) in code/config with clear rationale tied to research findings
 - [ ] **Symbol expansion:** Add top alts (SOLUSDT, BNBUSDT, XRPUSDT) to whitelist, RSS mapping, and kline coverage—same Binance Futures stack
 - [ ] **Review workflow:** Make manual trade review practical (structured logs/DB fields or export) to judge “win rate improved”
