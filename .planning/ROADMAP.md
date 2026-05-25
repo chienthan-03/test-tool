@@ -10,7 +10,7 @@ None (trading bot on established Node/TS stack; patterns documented in `.plannin
 
 ## Phases
 
-- [ ] **Phase 1: Entry Baseline & Observability** — Map the live entry path and capture baseline trade/backtest metrics
+- [x] **Phase 1: Entry Baseline & Observability** — Map the live entry path and capture baseline trade/backtest metrics
 - [ ] **Phase 2: Backtest Experiment Framework** — Runnable matrix to compare configs reproducibly
 - [ ] **Phase 3: Sentiment Filter Research** — Threshold and LLM-gate experiments from data
 - [ ] **Phase 4: MTF Entry Alignment Research** — Technical confirm and alignment experiments
@@ -30,11 +30,11 @@ None (trading bot on established Node/TS stack; patterns documented in `.plannin
 **Plans**: 5 plans
 
 Plans:
-- [ ] 01-01: Trace entry path (news → sentiment → strategy → risk → adapter) with file references
-- [ ] 01-02: Define baseline metrics schema for manual review (fields in DB/logs)
-- [ ] 01-03: Run baseline backtest on existing kline fixtures / default config
-- [ ] 01-04: Export sample trades from SQLite for review template
-- [ ] 01-05: Summarize baseline findings in phase NOTES
+- [x] 01-01: Trace entry path (news → sentiment → strategy → risk → adapter) with file references
+- [x] 01-02: Define baseline metrics schema for manual review (fields in DB/logs)
+- [x] 01-03: Run baseline backtest on existing kline fixtures / default config
+- [x] 01-04: Export sample trades from SQLite for review template
+- [x] 01-05: Summarize baseline findings in phase NOTES
 
 ### Phase 2: Backtest Experiment Framework
 **Goal**: Make filter/config comparisons repeatable (script or CLI flags + result artifacts).
@@ -174,7 +174,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Entry Baseline | 0/5 | Not started | - |
+| 1. Entry Baseline | 5/5 | Complete | 2026-05-25 |
 | 2. Backtest Experiments | 0/6 | Not started | - |
 | 3. Sentiment Filters | 0/6 | Not started | - |
 | 4. MTF Alignment | 0/7 | Not started | - |
