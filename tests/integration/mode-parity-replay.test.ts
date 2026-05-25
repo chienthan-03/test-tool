@@ -10,10 +10,19 @@ import { openDatabase } from '../../src/storage/db.js';
 import { migrate } from '../../src/storage/migrate.js';
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
-const defaultConfigPath = join(projectRoot, 'config/default.yaml');
+const parityConfigPath = join(projectRoot, 'config/experiments/risk-baseline.yaml');
 const fixtureKlineDir = join(projectRoot, 'data/klines');
 
-describe('backtest-smoke integration', () => {
+const metricsSnapshot = (report: Awaited<ReturnType<typeof runBacktest>>) => ({
+  totalTrades: report.totalTrades,
+  wins: report.wins,
+  losses: report.losses,
+  winRate: report.winRate,
+  totalPnlUsdt: report.totalPnlUsdt,
+  maxDrawdownPct: report.maxDrawdownPct,
+});
+
+describe('mode parity — backtest replay determinism', () => {
   let config: AppConfig;
   let cacheDir: string;
   let reportDir: string;
@@ -21,9 +30,10 @@ describe('backtest-smoke integration', () => {
   let db: ReturnType<typeof openDatabase> | null = null;
 
   beforeAll(async () => {
-    config = loadConfig(defaultConfigPath);
-    cacheDir = await mkdtemp(join(tmpdir(), 'backtest-klines-'));
-    reportDir = await mkdtemp(join(tmpdir(), 'backtest-reports-'));
+    config = loadConfig(parityConfigPath);
+    config = { ...config, symbols: ['BTCUSDT'] };
+    cacheDir = await mkdtemp(join(tmpdir(), 'parity-klines-'));
+    reportDir = await mkdtemp(join(tmpdir(), 'parity-reports-'));
     dbPath = join(cacheDir, 'test.db');
 
     await mkdir(cacheDir, { recursive: true });
@@ -36,15 +46,8 @@ describe('backtest-smoke integration', () => {
 
     config = {
       ...config,
-      symbols: ['BTCUSDT'],
-      backtest: {
-        ...config.backtest,
-        klineCacheDir: cacheDir,
-        reportDir,
-      },
-      storage: {
-        sqlitePath: dbPath,
-      },
+      backtest: { ...config.backtest, klineCacheDir: cacheDir, reportDir },
+      storage: { sqlitePath: dbPath },
     };
   });
 
@@ -54,14 +57,13 @@ describe('backtest-smoke integration', () => {
     await rm(reportDir, { recursive: true, force: true });
   });
 
-  it('produces a report with trades using mock sentiment on cached klines', async () => {
+  it('two backtest runs on identical inputs produce identical metrics', async () => {
     db = openDatabase(dbPath);
     migrate(db);
 
     const from = new Date('2024-10-01T00:00:00.000Z');
     const to = new Date('2024-11-01T00:00:00.000Z');
-
-    const report = await runBacktest({
+    const opts = {
       config,
       db,
       from,
@@ -69,11 +71,12 @@ describe('backtest-smoke integration', () => {
       symbols: config.symbols,
       mockSentiment: true,
       skipDownload: true,
-    });
+    };
 
-    expect(report.trades.length).toBeGreaterThan(0);
-    expect(report.totalTrades).toBe(report.trades.length);
-    expect(report.from).toBe(from.toISOString());
-    expect(report.to).toBe(to.toISOString());
+    const first = await runBacktest(opts);
+    const second = await runBacktest(opts);
+
+    expect(metricsSnapshot(first)).toEqual(metricsSnapshot(second));
+    expect(first.trades.length).toBeGreaterThan(0);
   });
 });

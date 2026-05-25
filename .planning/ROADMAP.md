@@ -18,8 +18,8 @@ None (trading bot on established Node/TS stack; patterns documented in `.plannin
 - [x] **Phase 6: Entry Quality Gates** — Ship winning filters in code/config
 - [x] **Phase 7: Risk & Exit Tuning** — SL/TP, cooldown, per-symbol position rules
 - [x] **Phase 8: Trade Review Workflow** — Export and structured fields for manual review
-- [ ] **Phase 9: Mode Parity Validation** — sim / backtest / testnet consistency checks
-- [ ] **Phase 10: Rollout & Documentation** — Operator docs, safety checklist, config guidance
+- [x] **Phase 9: Mode Parity Validation** — sim / backtest / testnet consistency checks
+- [x] **Phase 10: Rollout & Documentation** — Operator docs, safety checklist, config guidance
 
 ## Phase Details
 
@@ -147,12 +147,12 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 09-01: Parity test matrix (same config, three modes)
-- [ ] 09-02: Fix divergences found in sim vs backtest
-- [ ] 09-03: Testnet smoke run (no live)
-- [ ] 09-04: Document known mode differences
-- [ ] 09-05: Integration tests where feasible
-- [ ] 09-06: Sign-off criteria for “ready beyond testnet”
+- [x] 09-01: Parity test matrix (same config, three modes)
+- [x] 09-02: Fix divergences found in sim vs backtest
+- [x] 09-03: Testnet smoke run (no live)
+- [x] 09-04: Document known mode differences
+- [x] 09-05: Integration tests where feasible
+- [x] 09-06: Sign-off criteria for “ready beyond testnet”
 
 ### Phase 10: Rollout & Documentation
 **Goal**: Consolidate presets, operator docs, and live-safety checklist; update PROJECT/STATE.
@@ -161,10 +161,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 10-01: Recommended production config profile (YAML)
-- [ ] 10-02: README + config comments for win-rate settings
-- [ ] 10-03: Live safety checklist (`allowLive`, keys, review cadence)
-- [ ] 10-04: Milestone summary and move requirements in PROJECT.md
+- [x] 10-01: Recommended production config profile (YAML)
+- [x] 10-02: README + config comments for win-rate settings
+- [x] 10-03: Live safety checklist (`allowLive`, keys, review cadence)
+- [x] 10-04: Milestone summary and move requirements in PROJECT.md
 
 ## Progress
 
@@ -176,13 +176,13 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 |-------|----------------|--------|-----------|
 | 1. Entry Baseline | 5/5 | Complete | 2026-05-25 |
 | 2. Backtest Experiments | 6/6 | Complete | 2026-05-25 |
-| 3. Sentiment Filters | 0/6 | Not started | - |
-| 4. MTF Alignment | 0/7 | Not started | - |
-| 5. Symbol Expansion | 0/5 | Not started | - |
-| 6. Entry Quality Gates | 0/8 | Not started | - |
-| 7. Risk & Exit Tuning | 0/6 | Not started | - |
-| 8. Trade Review Workflow | 0/5 | Not started | - |
-| 9. Mode Parity | 0/6 | Not started | - |
-| 10. Rollout & Docs | 0/4 | Not started | - |
+| 3. Sentiment Filters | 6/6 | Complete | 2026-05-25 |
+| 4. MTF Alignment | 7/7 | Complete | 2026-05-25 |
+| 5. Symbol Expansion | 5/5 | Complete | 2026-05-25 |
+| 6. Entry Quality Gates | 8/8 | Complete | 2026-05-25 |
+| 7. Risk & Exit Tuning | 6/6 | Complete | 2026-05-25 |
+| 8. Trade Review Workflow | 5/5 | Complete | 2026-05-25 |
+| 9. Mode Parity | 6/6 | Complete | 2026-05-25 |
+| 10. Rollout & Docs | 4/4 | Complete | 2026-05-25 |
 
 **Total plans:** 57

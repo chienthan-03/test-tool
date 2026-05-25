@@ -1,0 +1,14 @@
+{
+  "executedAt": "2026-05-25T09:57:32.439Z",
+  "mode": "backtest",
+  "config": "C:\\Publish\\tool-test\\config\\experiments\\risk-baseline.yaml",
+  "from": "2024-10-01T00:00:00.000Z",
+  "to": "2024-11-01T00:00:00.000Z",
+  "metrics": {
+    "totalTrades": 7,
+    "winRate": 0.2857142857142857,
+    "totalPnlUsdt": -117.53527150133903,
+    "maxDrawdownPct": 1.4330294494235931
+  },
+  "note": "Sim/testnet parity documented in MODE-PARITY.md; stack in src/app/paper-trading-stack.ts"
+}

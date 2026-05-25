@@ -6,6 +6,8 @@ English summary: automated futures trader driven by RSS news rules and optional 
 
 **Thiết kế đầy đủ:** [docs/superpowers/specs/2026-05-20-crypto-news-trader-design.md](docs/superpowers/specs/2026-05-20-crypto-news-trader-design.md)
 
+**Hướng dẫn Futures (tiếng Việt):** [docs/HUONG-DAN-FUTURES.md](docs/HUONG-DAN-FUTURES.md) — cách dùng đúng testnet/live, margin, leverage, size lệnh, quy trình từng bước. Checklist live: [docs/KIEM-TRA-LIVE.md](docs/KIEM-TRA-LIVE.md).
+
 ---
 
 ## Tổng quan / Project overview
@@ -15,7 +17,7 @@ Luồng chính:
 1. Poll RSS (CoinDesk, CoinTelegraph, …) → lưu SQLite, dedupe theo hash.
 2. Ánh xạ symbol whitelist (`BTCUSDT`, `ETHUSDT`, …) — tin không khớp symbol bị bỏ qua.
 3. Rule scorer + (tùy chọn) OpenRouter khi vượt ngưỡng `thresholdLLM`.
-4. Chiến lược MTF (1h context + 15m entry) → intent.
+4. Chiến lược MTF (mặc định **1d** context + **4h** entry) → intent.
 5. Risk engine: % balance, SL/TP theo ATR → lệnh qua adapter (`sim` / `testnet` / `live`).
 
 ---
@@ -63,20 +65,50 @@ npm run dev -- <command> [options]
 
 ---
 
+## Win rate improvement (Phases 1–10)
+
+Research cycle merged into production presets (rule-only sentiment, tighter Fib zone, 5 symbols, `EntryGate`, optional cooldown).
+
+| Resource | Purpose |
+|----------|---------|
+| `config/production.yaml` | Recommended operator profile (`allowLive: false` until checklist done) |
+| `config/default.yaml` | Same strategy settings; inline comments on win-rate fields |
+| `docs/LIVE-SAFETY-CHECKLIST.md` | Required before mainnet `start --mode live` |
+| `npm run export-trade-review` | CSV for manual trade review |
+| `npm run backtest-matrix` | Compare experiment YAMLs |
+| `npm run parity-check` | Backtest smoke on production risk baseline |
+| `.planning/phases/08-trade-review-workflow/` | Review checklist & process |
+| `.planning/phases/09-mode-parity-validation/MODE-PARITY.md` | Sim / backtest / testnet differences |
+
+**Mode progression:** sim → testnet (≥1 week + trade review) → live only after checklist + `allowLive: true`.
+
+```bash
+# Use production profile
+export CONFIG_PATH=./config/production.yaml
+npm run dev -- validate --config config/production.yaml
+npm run parity-check
+npm run dev -- start --mode testnet
+```
+
+---
+
 ## Cấu hình / Configuration
 
-File mặc định: `config/default.yaml`. Các trường quan trọng:
+File mặc định: `config/default.yaml` (hoặc `config/production.yaml` cho vận hành). Các trường quan trọng:
 
 | Trường | Ý nghĩa |
 |--------|---------|
 | `mode` | Gợi ý mặc định (`sim`); runtime thực tế do `start --mode` |
-| `allowLive` | **Phải `true`** mới cho phép `start --mode live` |
+| `allowLive` | **`false` by default**; set `true` only after `docs/LIVE-SAFETY-CHECKLIST.md` |
+| `entryGates` | Phase 6 MTF veto layer (`enabled`, `captureRejects` for review exports) |
+| `strategy.fibonacci.zoneTolerancePercent` | `0.02` production preset (Phase 4/6) |
+| `risk.cooldownAfterLoss` | Optional per-symbol cooldown after loss (Phase 7; default off) |
 | `symbols` | Danh sách cặp futures (whitelist RSS) |
 | `symbolOverrides` | Ghi đè risk/strategy theo symbol |
 | `feeds` | RSS: `id`, `url`, `pollIntervalSec`, `enabled` |
 | `sentiment.rules` | Từ khóa, `thresholdLLM`, `minStrength`, tag rules |
 | `sentiment.llm` | `enabled`, `model`, `maxCallsPerHour`, `minConfidence` |
-| `risk.positionPercent` | % balance mỗi lệnh (mặc định `2`) |
+| `risk.positionPercent` | % balance → notional mỗi lệnh (production: `15`; hạ khi testnet, xem [HUONG-DAN-FUTURES.md](docs/HUONG-DAN-FUTURES.md)) |
 | `risk.slAtrMultiplier` / `tpAtrMultiplier` | SL/TP theo ATR |
 | `binance.margin.enabled` | Bật/tắt set margin/leverage lúc connect (mặc định `true`) |
 | `binance.margin.mode` | `isolated` hoặc `cross` (mặc định `isolated`) |
@@ -204,7 +236,7 @@ Khuyến nghị: **sim → testnet → live**.
 |------|------|----------|---------|
 | 1 | `sim` | Không | Kline public mainnet; lệnh ảo + phí/slippage |
 | 2 | `testnet` | Testnet Futures | Lệnh thật trên testnet; kiểm tra SL/TP trên UI |
-| 3 | `live` | Mainnet Futures | Đặt `allowLive: true` trong YAML; tiền thật |
+| 3 | `live` | Mainnet Futures | Hoàn thành `docs/LIVE-SAFETY-CHECKLIST.md`; đặt `allowLive: true`; tiền thật |
 
 Nếu `allowLive: false`, lệnh live thoát với: `Refusing live mode: set allowLive: true in config`.
 

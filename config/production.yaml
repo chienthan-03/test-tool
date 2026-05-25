@@ -1,5 +1,6 @@
-# Dev/default config — same strategy as config/production.yaml.
-# allowLive: false until you complete docs/LIVE-SAFETY-CHECKLIST.md (then set true for live only).
+# Recommended operator profile — Phases 3–7 research merged (see config/default.yaml).
+# Point CONFIG_PATH here for testnet/sim; enable live only after docs/KIEM-TRA-LIVE.md (vi) or LIVE-SAFETY-CHECKLIST.md.
+# Huong dan Futures (tieng Viet): docs/HUONG-DAN-FUTURES.md
 mode: sim
 
 allowLive: false
@@ -27,7 +28,6 @@ feeds:
     pollIntervalSec: 120
     enabled: true
 
-# Win-rate: rule-only sentiment (Phase 3). LLM adds latency/cost; enable only after A/B backtest.
 sentiment:
   rules:
     impactHigh: 3
@@ -71,7 +71,7 @@ sentiment:
         keywords: [etf, approval, inflow]
         impact: 2
   llm:
-    enabled: false # Phase 3 preset — keep false for production parity with backtest matrix
+    enabled: false
     provider: openrouter
     baseUrl: https://openrouter.ai/api/v1
     model: openai/gpt-oss-120b:free
@@ -80,7 +80,6 @@ sentiment:
     timeoutMs: 15000
     defaultTtlMinutes: 45
 
-# MTF entry (Phase 4): context 1d / entry 4h; fib zone 0.02 validated in Phase 6 matrix.
 strategy:
   atrPeriod: 14
   minAtrPercent: 0.12
@@ -98,13 +97,12 @@ strategy:
   fibonacci:
     entryMin: 0.382
     entryMax: 0.618
-    zoneTolerancePercent: 0.02 # Phase 4/6 — tighter than 0.05 pre-research
+    zoneTolerancePercent: 0.02
     stopLevel: 0.886
     targetExtension: 1.618
     stopBelowSwing: true
     stopBufferPercent: 0.002
 
-# Risk (Phase 7): cooldown off on baseline matrix; tune via risk.cooldownAfterLoss experiments.
 risk:
   positionPercent: 15
   minNotionalUsdt: 5
@@ -113,7 +111,7 @@ risk:
   tpAtrMultiplier: 3.0
   trailingStop: false
   cooldownAfterLoss:
-    enabled: false # Phase 7 — risk-baseline won vs 12h/24h cooldown variants
+    enabled: false
     durationHours: 12
 
 binance:
@@ -152,8 +150,7 @@ logging:
   level: info
   pretty: true
 
-# Phase 6 EntryGate — vetoes weak MTF setups before risk engine.
 entryGates:
   enabled: true
   logRejects: false
-  captureRejects: false # set true + re-backtest to export gateRejects in trade review CSV
+  captureRejects: false

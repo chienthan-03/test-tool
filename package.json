@@ -20,6 +20,7 @@
     "export-signals-review": "tsx scripts/export-signals-review.ts",
     "export-backtest-trades": "tsx scripts/export-backtest-trades-review.ts",
     "analyze-backtest-losses": "tsx scripts/analyze-backtest-losses.ts",
+    "parity-check": "tsx scripts/run-parity-check.ts",
     "prefetch-klines": "tsx scripts/prefetch-klines.ts"
   },
   "engines": {

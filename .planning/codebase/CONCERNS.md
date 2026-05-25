@@ -9,8 +9,8 @@
 - Execution, market, and bootstrap paths have tests but no coverage thresholds
 
 **Live trading safety:**
-- `config/default.yaml` has `allowLive: true` — live mode enabled at config level; relies on operator discipline and `start` checks
-- Review before production deploy
+- `config/default.yaml` and `config/production.yaml` default `allowLive: false` (Phase 10)
+- Live requires explicit `allowLive: true` + `docs/LIVE-SAFETY-CHECKLIST.md`
 
 **In-memory coordination:**
 - `pendingPlans` and `intentMeta` Maps in `src/app/bootstrap.ts` — process-local only; restart loses in-flight linkage

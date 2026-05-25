@@ -3,27 +3,17 @@ import { join } from 'node:path';
 import type Database from 'better-sqlite3';
 import type { AppConfig } from '../config/schema.js';
 import { AppEventBus } from '../core/event-bus.js';
-import type {
-  BacktestReport,
-  BacktestTradeRecord,
-  Candle,
-  Fill,
-  GateRejectRecord,
-  NewsSignal,
-  OrderPlan,
-  OrderSide,
-  TradeIntent,
-} from '../core/types.js';
+import type { BacktestReport, Candle, NewsSignal } from '../core/types.js';
+import {
+  createPaperTradingStack,
+  createSimPaperExecutionState,
+  wireSimPaperExecution,
+} from '../app/paper-trading-stack.js';
 import { getDefaultFilters } from '../execution/exchange-info.js';
 import { SimBroker } from '../execution/sim-broker.js';
 import { cacheFilePath, downloadKlines, loadKlines } from '../market/kline-cache.js';
 import { KlineStore } from '../market/kline-store.js';
 import { intervalToMs } from '../market/timeframe.js';
-import { RiskEngine } from '../risk/risk-engine.js';
-import { MtfEngine } from '../strategy/mtf-engine.js';
-import { PendingSignalStore } from '../strategy/pending-signals.js';
-import { SymbolCooldownTracker } from '../strategy/symbol-cooldown.js';
-import { StrategyEngine } from '../strategy/strategy-engine.js';
 import { SignalRepository } from '../storage/repositories/signal-repo.js';
 
 export type BacktestReplayerOptions = {
@@ -203,8 +193,6 @@ export class BacktestReplayer {
     const backtestConfig = buildBacktestConfig(config);
     const bus = new AppEventBus();
     const store = new KlineStore();
-    const pending = new PendingSignalStore();
-    const mtf = new MtfEngine(backtestConfig, store);
     let simNow = from;
     const getNow = (): Date => simNow;
 
@@ -218,96 +206,20 @@ export class BacktestReplayer {
     });
     await broker.connect();
 
-    const trades: BacktestTradeRecord[] = [];
-    const gateRejects: GateRejectRecord[] = [];
-    const equityCurve: number[] = [backtestConfig.sim.initialBalanceUsdt];
-    const pendingPlans = new Map<string, OrderPlan>();
-    const intentMeta = new Map<string, { newsId: string }>();
-    const openTradeMeta = new Map<
-      string,
-      { newsId: string; side: OrderSide; entry: number; stopLoss: number; takeProfit: number }
-    >();
+    const execState = createSimPaperExecutionState(backtestConfig.sim.initialBalanceUsdt);
+    wireSimPaperExecution(bus, broker, execState);
 
-    bus.on('strategy:gateReject', (reject) => {
-      gateRejects.push(reject);
-    });
-
-    bus.on('strategy:intent', (intent: TradeIntent) => {
-      intentMeta.set(intent.id, { newsId: intent.newsId });
-    });
-
-    bus.on('risk:orderPlan', (plan) => {
-      void handleOrderPlan(plan);
-    });
-
-    bus.on('execution:fill', (fill: Fill) => {
-      const plan = pendingPlans.get(fill.symbol);
-      const meta = plan ? intentMeta.get(plan.intentId) : undefined;
-      openTradeMeta.set(fill.symbol, {
-        newsId: meta?.newsId ?? 'unknown',
-        side: fill.side,
-        entry: fill.price,
-        stopLoss: plan?.stopLoss ?? 0,
-        takeProfit: plan?.takeProfit ?? 0,
-      });
-    });
-
-    bus.on('execution:positionClosed', async (event) => {
-      const meta = openTradeMeta.get(event.symbol);
-      if (meta) {
-        trades.push({
-          symbol: event.symbol,
-          side: meta.side,
-          entry: meta.entry,
-          exit: event.exitPrice,
-          pnl: event.pnl,
-          newsId: meta.newsId,
-          exitReason: event.exitReason,
-          stopLoss: meta.stopLoss,
-          takeProfit: meta.takeProfit,
-        });
-        openTradeMeta.delete(event.symbol);
-      }
-
-      pendingPlans.delete(event.symbol);
-      const balance = await broker.getBalance();
-      equityCurve.push(balance.total);
-    });
-
-    const handleOrderPlan = async (plan: OrderPlan): Promise<void> => {
-      pendingPlans.set(plan.symbol, plan);
-      const exitSide = plan.side === 'BUY' ? 'SELL' : 'BUY';
-
-      try {
-        await broker.placeEntry(plan);
-        await broker.placeStopLoss(plan.symbol, exitSide, plan.stopLoss, plan.quantity);
-        await broker.placeTakeProfit(plan.symbol, exitSide, plan.takeProfit, plan.quantity);
-      } catch {
-        pendingPlans.delete(plan.symbol);
-      }
-    };
-
-    const cooldown = new SymbolCooldownTracker(backtestConfig, getNow);
-    cooldown.wire(bus);
-
-    new StrategyEngine(
-      backtestConfig,
+    createPaperTradingStack({
+      config: backtestConfig,
       bus,
       store,
-      mtf,
-      pending,
-      async (symbol) => (await broker.getPosition(symbol)) !== null,
-      (symbol) => cooldown.isBlocked(symbol),
-      () => false,
+      broker,
       getNow,
-    );
-
-    new RiskEngine(
-      backtestConfig,
-      bus,
-      () => broker.getBalance(),
-      resolveFilters,
-    );
+      getFilters: resolveFilters,
+      onGateReject: (reject) => {
+        execState.gateRejects.push(reject);
+      },
+    });
 
     bus.on('market:candleClose', (event) => {
       broker.onPriceUpdate(event.symbol, event.candle);
@@ -340,6 +252,7 @@ export class BacktestReplayer {
       await flushAsyncHandlers();
     }
 
+    const { trades, gateRejects, equityCurve } = execState;
     const wins = trades.filter((t) => t.pnl > 0).length;
     const losses = trades.filter((t) => t.pnl <= 0).length;
     const totalPnlUsdt = trades.reduce((sum, t) => sum + t.pnl, 0);

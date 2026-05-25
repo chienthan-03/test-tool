@@ -4,33 +4,26 @@
 
 See: .planning/PROJECT.md (updated 2026-05-25)
 
-**Core value:** Every taken entry should have a demonstrably stronger setup—validated through research, backtest comparison, and human review of trades.
-**Current focus:** Phase 9 — Mode Parity Validation
+**Status:** Win rate improvement planning cycle **complete** (Phases 1–10).
 
 ## Current Position
 
-Phase: 9 of 10 (Mode Parity Validation)
-Status: Phase 8 complete
-Last activity: 2026-05-25 — Phase 8 planned + executed
+Phase: 10 of 10 (Rollout) — **done**
+Progress: ██████████ 100%
 
-Progress: ████████░░ ~80%
+## Production config
 
-## Velocity
-
-Total plans completed: 48 (Phases 1–8)
-
-| Phase | Status |
-|-------|--------|
-| 1–7 | Complete |
-| 8. Trade Review Workflow | Complete |
-| 9. Mode Parity | Planned |
+- Operator profile: `config/production.yaml`
+- Dev/default: `config/default.yaml` (same strategy, commented)
+- Live gate: `allowLive: false` until `docs/LIVE-SAFETY-CHECKLIST.md` completed
 
 ## Key decisions
 
-- Trade review CSV: `scripts/lib/trade-review-csv.ts` — single header row for sqlite + backtest
-- Gate rejects: `entryGates.captureRejects` (default false); included in `BacktestReport` when enabled
-- Pilot: Phase 6 production beats pre-research on win rate (25.5% vs 24.0%) on same window
+- Rule-only sentiment, fib 0.02, 5 symbols, EntryGate on, cooldown off (Phases 3–7)
+- Manual trade review is the success metric (Phase 8)
+- Testnet before live; parity documented (Phase 9)
+- Safe defaults for live promotion (Phase 10)
 
 ## Session Continuity
 
-Last session: 2026-05-25 — Phase 8 complete
+Last session: 2026-05-25 — Phase 10 complete; ready for testnet operations

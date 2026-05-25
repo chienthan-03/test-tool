@@ -1,0 +1,7 @@
+from: "2025-01-01"
+to: "2025-01-08"
+mockSentiment: true
+experimentsDir: ./data/reports/experiments/parity-validation
+runs:
+  - id: parity-btc-7d
+    config: config/experiments/risk-baseline.yaml
