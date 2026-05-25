@@ -1,0 +1,25 @@
+{
+  "matrix": "config/experiments/symbols-matrix.yaml",
+  "from": "2024-10-01",
+  "to": "2024-12-31",
+  "mockSentiment": true,
+  "executedAt": "2026-05-25",
+  "runs": [
+    {
+      "id": "symbols-btc-eth",
+      "symbols": 2,
+      "totalTrades": 22,
+      "winRate": 0.36363636363636365,
+      "totalPnlUsdt": 358.2965148479986,
+      "maxDrawdownPct": 1.687791516777579
+    },
+    {
+      "id": "symbols-expanded",
+      "symbols": 5,
+      "totalTrades": 47,
+      "winRate": 0.2553191489361702,
+      "totalPnlUsdt": -258.9463636363636,
+      "maxDrawdownPct": 5.7336739695201455
+    }
+  ]
+}

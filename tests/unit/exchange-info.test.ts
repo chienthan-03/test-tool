@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   clearExchangeInfoCache,
+  getDefaultFilters,
   roundPrice,
   roundQuantity,
 } from '../../src/execution/exchange-info.js';
@@ -18,5 +19,13 @@ describe('exchange-info', () => {
   it('round quantity floors to stepSize', () => {
     expect(roundQuantity(0.1234, 0.001)).toBe(0.123);
     expect(roundQuantity(1.0, 0.001)).toBe(1);
+  });
+
+  it('provides default filters for expanded symbols', () => {
+    for (const symbol of ['SOLUSDT', 'BNBUSDT', 'XRPUSDT']) {
+      const filters = getDefaultFilters(symbol);
+      expect(filters?.symbol).toBe(symbol);
+      expect(filters!.minNotional).toBeGreaterThanOrEqual(5);
+    }
   });
 });

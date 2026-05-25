@@ -28,7 +28,7 @@ A Node.js CLI bot that trades Binance USDⓈ-M Futures from crypto RSS news sent
 - [ ] **Filter experiments:** Compare MTF alignment rules and cooldown/position limits via backtest matrix (sentiment grid done — see `.planning/phases/03-sentiment-filters/`)
 - [x] **Sentiment filter research (Phase 3):** Fixture matrix + recommendation → `config/experiments/sentiment-recommended.yaml` (`llm.enabled: false` pending Phase 6 merge)
 - [ ] **Higher-quality entries:** Implement winning filter set(s) in code/config with clear rationale tied to research findings
-- [ ] **Symbol expansion:** Add top alts (SOLUSDT, BNBUSDT, XRPUSDT) to whitelist, RSS mapping, and kline coverage—same Binance Futures stack
+- [x] **Symbol expansion (Phase 5):** SOLUSDT, BNBUSDT, XRPUSDT in `config/default.yaml`, kline prefetch, backtest matrix — see `.planning/phases/05-symbol-expansion/`
 - [ ] **Review workflow:** Make manual trade review practical (structured logs/DB fields or export) to judge “win rate improved”
 - [ ] **Parity across modes:** Logic changes must behave consistently in sim, backtest replay, and testnet
 
@@ -68,6 +68,7 @@ A Node.js CLI bot that trades Binance USDⓈ-M Futures from crypto RSS news sent
 | GSD workflow: YOLO + comprehensive depth + parallel execution | User preference for planning/execution style | — Pending |
 | Sentiment preset (Phase 3) | `sentiment-no-llm` / `sentiment-recommended.yaml` | Matrix + discard analysis; identical metrics on fixtures | — Pending validation in Phase 6 |
 | MTF preset (Phase 4) | `mtf-tighter-fib` / `mtf-recommended.yaml` | Mock matrix: 36.4% win, 22 trades vs 32%/25 baseline | — Pending Phase 6 merge |
+| Symbol universe (Phase 5) | 5 symbols in `default.yaml` | Expanded mock backtest: 47 trades, 25.5% win | — Phase 6 combined validation |
 
 ---
 *Last updated: 2026-05-25 after Phase 3 execution*

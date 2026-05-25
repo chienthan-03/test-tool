@@ -89,11 +89,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 05-01: Update `config/default.yaml` and Zod schema if needed
-- [ ] 05-02: Extend `symbol-mapper` / RSS tagging for new symbols
-- [ ] 05-03: Fetch or add kline fixtures for new symbols
-- [ ] 05-04: Smoke test market WS/REST for new symbols (testnet/sim)
-- [ ] 05-05: Re-run baseline backtest with expanded universe
+- [x] 05-01: Update `config/default.yaml` and Zod schema if needed
+- [x] 05-02: Extend `symbol-mapper` / RSS tagging for new symbols
+- [x] 05-03: Fetch or add kline fixtures for new symbols
+- [x] 05-04: Smoke test market WS/REST for new symbols (testnet/sim)
+- [x] 05-05: Re-run baseline backtest with expanded universe
 
 ### Phase 6: Entry Quality Gates
 **Goal**: Implement research-backed gates (sentiment + MTF + optional cooldown) in strategy/sentiment layers.

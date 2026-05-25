@@ -1,3 +1,4 @@
+# experiment: symbols-btc-eth-only — Phase 4 MTF preset, 2 symbols (comparison control)
 mode: sim
 
 allowLive: true
@@ -5,9 +6,6 @@ allowLive: true
 symbols:
   - BTCUSDT
   - ETHUSDT
-  - SOLUSDT
-  - BNBUSDT
-  - XRPUSDT
 
 symbolOverrides: {}
 
@@ -94,7 +92,7 @@ strategy:
   fibonacci:
     entryMin: 0.382
     entryMax: 0.618
-    zoneTolerancePercent: 0.05
+    zoneTolerancePercent: 0.02
     stopLevel: 0.886
     targetExtension: 1.618
     stopBelowSwing: true

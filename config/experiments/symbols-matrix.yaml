@@ -1,0 +1,9 @@
+from: "2024-10-01"
+to: "2024-12-31"
+mockSentiment: true
+experimentsDir: ./data/reports/experiments/symbols-phase5
+runs:
+  - id: symbols-btc-eth
+    config: config/experiments/symbols-btc-eth-only.yaml
+  - id: symbols-expanded
+    config: config/experiments/symbols-expanded.yaml

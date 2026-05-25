@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Altcoin Feed</title>
+    <link>https://fixture.local</link>
+    <description>Solana headline</description>
+    <item>
+      <title>Solana rally lifts SOL as traders cite strong inflow and partnership deals</title>
+      <link>https://fixture.local/sol-rally</link>
+      <description>SOL surges on ETF approval narrative and rate cut hopes.</description>
+      <pubDate>Mon, 20 May 2026 10:00:00 GMT</pubDate>
+      <guid>https://fixture.local/sol-rally</guid>
+    </item>
+  </channel>
+</rss>

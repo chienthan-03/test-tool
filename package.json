@@ -17,7 +17,8 @@
     "backtest-matrix": "tsx scripts/run-backtest-matrix.ts",
     "seed-signals": "tsx scripts/seed-signals-from-fixtures.ts",
     "export-signals-review": "tsx scripts/export-signals-review.ts",
-    "export-backtest-trades": "tsx scripts/export-backtest-trades-review.ts"
+    "export-backtest-trades": "tsx scripts/export-backtest-trades-review.ts",
+    "prefetch-klines": "tsx scripts/prefetch-klines.ts"
   },
   "engines": {
     "node": ">=20"

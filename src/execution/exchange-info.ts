@@ -20,6 +20,33 @@ const DEFAULT_FILTERS: Record<string, ExchangeFilters> = {
     maxPrice: 1_000_000,
     minNotional: 5,
   },
+  SOLUSDT: {
+    symbol: 'SOLUSDT',
+    stepSize: 0.01,
+    minQty: 0.01,
+    tickSize: 0.01,
+    minPrice: 0.01,
+    maxPrice: 1_000_000,
+    minNotional: 5,
+  },
+  BNBUSDT: {
+    symbol: 'BNBUSDT',
+    stepSize: 0.01,
+    minQty: 0.01,
+    tickSize: 0.01,
+    minPrice: 0.01,
+    maxPrice: 1_000_000,
+    minNotional: 5,
+  },
+  XRPUSDT: {
+    symbol: 'XRPUSDT',
+    stepSize: 0.1,
+    minQty: 0.1,
+    tickSize: 0.0001,
+    minPrice: 0.0001,
+    maxPrice: 1_000_000,
+    minNotional: 5,
+  },
 };
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;

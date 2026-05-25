@@ -1,3 +1,4 @@
+# experiment: symbols-expanded — 5-symbol universe + Phase 4 MTF preset
 mode: sim
 
 allowLive: true
@@ -94,7 +95,7 @@ strategy:
   fibonacci:
     entryMin: 0.382
     entryMax: 0.618
-    zoneTolerancePercent: 0.05
+    zoneTolerancePercent: 0.02
     stopLevel: 0.886
     targetExtension: 1.618
     stopBelowSwing: true

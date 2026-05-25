@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-05-25)
 
 **Core value:** Every taken entry should have a demonstrably stronger setup—validated through research, backtest comparison, and human review of trades.
-**Current focus:** Phase 5 — Symbol Expansion
+**Current focus:** Phase 6 — Entry Quality Gates
 
 ## Current Position
 
-Phase: 5 of 10 (Symbol Expansion)
-Plan: 05-01 of 5 (plans written)
-Status: Ready to execute
-Last activity: 2026-05-25 — Phase 5 planned (5 PLAN.md files)
+Phase: 5 of 10 (Symbol Expansion) — **Complete**
+Plan: 05-05 of 5
+Status: Phase 5 done; ready to plan Phase 6
+Last activity: 2026-05-25 — Phase 5 executed (5/5 plans)
 
-Progress: ████░░░░░░ ~40%
+Progress: █████░░░░░ ~50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 24
-- By phase: P1=5, P2=6, P3=6, P4=7
+- Total plans completed: 29
+- By phase: P1=5, P2=6, P3=6, P4=7, P5=5
 
 **By Phase:**
 
@@ -30,7 +30,7 @@ Progress: ████░░░░░░ ~40%
 | 2. Backtest Experiments | 6 | 6 | Complete |
 | 3. Sentiment Filters | 6 | 6 | Complete |
 | 4. MTF Entry Alignment | 7 | 7 | Complete |
-| 5. Symbol Expansion | 5 | 5 | Planned |
+| 5. Symbol Expansion | 5 | 5 | Complete |
 
 ## Accumulated Context
 
@@ -42,6 +42,7 @@ Progress: ████░░░░░░ ~40%
 - Phase 3 sentiment matrix: **2 trades, 0% win** on fixture-seeded real signals (all presets identical)
 - Recommended preset: `sentiment-recommended.yaml` (`llm.enabled: false`)
 - Phase 4 MTF winner: `mtf-recommended.yaml` (`zoneTolerancePercent: 0.02`) — 36.4% win, 22 trades (mock)
+- Phase 5: 5 symbols in `default.yaml`; expanded mock backtest **47 trades, 25.5% win**
 
 ### Deferred Issues
 
@@ -55,12 +56,11 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 5: prefetch klines for SOL/BNB/XRP before matrix (05-03)
-- Phase 6: combined sentiment + MTF validation matrix still needed
+- Phase 6: combined sentiment + MTF validation matrix on 5-symbol universe
 - Phase 3 real-signal runs (2 trades) not comparable to mock MTF baseline (25 trades)
 
 ## Session Continuity
 
 Last session: 2026-05-25
-Stopped at: Phase 4 execution complete
+Stopped at: Phase 5 execution complete
 Resume file: None
