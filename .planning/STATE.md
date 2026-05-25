@@ -5,46 +5,42 @@
 See: .planning/PROJECT.md (updated 2026-05-25)
 
 **Core value:** Every taken entry should have a demonstrably stronger setup—validated through research, backtest comparison, and human review of trades.
-**Current focus:** Phase 2 — Backtest Experiment Framework
+**Current focus:** Phase 3 — Sentiment Filter Research
 
 ## Current Position
 
-Phase: 2 of 10 (Backtest Experiment Framework)
-Plan: 02-01 of 6 (plans written)
-Status: Ready to execute
-Last activity: 2026-05-25 — Phase 2 planned (6 PLAN.md files)
+Phase: 3 of 10 (Sentiment Filter Research)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-05-25 — Phase 2 complete (6/6 plans)
 
-Progress: █░░░░░░░░░ ~10%
+Progress: ██░░░░░░░░ ~20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: —
-- Total execution time: —
+- Total plans completed: 11
+- By phase: P1=5, P2=6
 
 **By Phase:**
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 1. Entry Baseline | 5 | 5 | — |
-
-**Recent Trend:**
-- Last 5 plans: Phase 1 batch
-- Trend: —
+| Phase | Plans | Total | Status |
+|-------|-------|-------|--------|
+| 1. Entry Baseline | 5 | 5 | Complete |
+| 2. Backtest Experiments | 6 | 6 | Complete |
 
 ## Accumulated Context
 
 ### Decisions
 
-- Phase 1: Mock-sentiment baseline winRate **0.32** (25 trades, Oct–Dec 2024) — beat via MTF/sentiment research
-- Phase 1: Manual `would_take_again` is primary metric; export via `npm run export-trades-review`
-- Phase 1: Backtest does not persist trades to SQLite yet
+- Experiment harness: `npm run backtest-matrix -- --matrix config/experiments/matrix.yaml`
+- Mock matrix: sentiment-only YAML changes show **no diff** until real `news_signals` used
+- Phase 1 baseline winRate **0.32** (25 trades, Oct–Dec 2024)
 
 ### Deferred Issues
 
-- Real-sentiment backtest needs `news_signals` in DB or Phase 2 harness
-- Populate trade export sample via `start --mode sim`
+- Phase 3 must use real signals or inject signals into DB for sentiment grid
+- Pre-existing integration test failures unrelated to Phase 2 (rss/llm pipeline)
 
 ### Pending Todos
 
@@ -52,10 +48,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- `allowLive: true` in config — Phase 10
+None for Phase 3 planning.
 
 ## Session Continuity
 
 Last session: 2026-05-25
-Stopped at: Phase 1 execution complete
+Stopped at: Phase 2 execution complete
 Resume file: None

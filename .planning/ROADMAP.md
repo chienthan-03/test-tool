@@ -11,7 +11,7 @@ None (trading bot on established Node/TS stack; patterns documented in `.plannin
 ## Phases
 
 - [x] **Phase 1: Entry Baseline & Observability** — Map the live entry path and capture baseline trade/backtest metrics
-- [ ] **Phase 2: Backtest Experiment Framework** — Runnable matrix to compare configs reproducibly
+- [x] **Phase 2: Backtest Experiment Framework** — Runnable matrix to compare configs reproducibly
 - [ ] **Phase 3: Sentiment Filter Research** — Threshold and LLM-gate experiments from data
 - [ ] **Phase 4: MTF Entry Alignment Research** — Technical confirm and alignment experiments
 - [ ] **Phase 5: Symbol Expansion** — Add SOLUSDT, BNBUSDT, XRPUSDT end-to-end
@@ -44,12 +44,12 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 02-01: Inventory backtest inputs/outputs and gaps
-- [ ] 02-02: Config variant runner (YAML presets or env overrides)
-- [ ] 02-03: Per-run summary output (JSON/MD) for comparison
-- [ ] 02-04: Document experiment protocol for later phases
-- [ ] 02-05: Unit/smoke tests for experiment harness
-- [ ] 02-06: Phase summary with how to run matrix
+- [x] 02-01: Inventory backtest inputs/outputs and gaps
+- [x] 02-02: Config variant runner (YAML presets or env overrides)
+- [x] 02-03: Per-run summary output (JSON/MD) for comparison
+- [x] 02-04: Document experiment protocol for later phases
+- [x] 02-05: Unit/smoke tests for experiment harness
+- [x] 02-06: Phase summary with how to run matrix
 
 ### Phase 3: Sentiment Filter Research
 **Goal**: Quantify which sentiment thresholds (`minStrength`, `thresholdLLM`, keywords) improve entry quality without arbitrary tuning.
@@ -175,7 +175,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Entry Baseline | 5/5 | Complete | 2026-05-25 |
-| 2. Backtest Experiments | 0/6 | Not started | - |
+| 2. Backtest Experiments | 6/6 | Complete | 2026-05-25 |
 | 3. Sentiment Filters | 0/6 | Not started | - |
 | 4. MTF Alignment | 0/7 | Not started | - |
 | 5. Symbol Expansion | 0/5 | Not started | - |
