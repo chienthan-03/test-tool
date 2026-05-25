@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 5 of 10 (Symbol Expansion) — **Complete**
-Plan: 05-05 of 5
-Status: Phase 5 done; ready to plan Phase 6
-Last activity: 2026-05-25 — Phase 5 executed (5/5 plans)
+Phase: 6 of 10 (Entry Quality Gates)
+Plan: 06-01 of 8 (plans written)
+Status: Ready to execute
+Last activity: 2026-05-25 — Phase 6 planned (8 PLAN.md files)
 
 Progress: █████░░░░░ ~50%
 
@@ -31,6 +31,7 @@ Progress: █████░░░░░ ~50%
 | 3. Sentiment Filters | 6 | 6 | Complete |
 | 4. MTF Entry Alignment | 7 | 7 | Complete |
 | 5. Symbol Expansion | 5 | 5 | Complete |
+| 6. Entry Quality Gates | 8 | 8 | Planned |
 
 ## Accumulated Context
 
@@ -56,7 +57,7 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 6: combined sentiment + MTF validation matrix on 5-symbol universe
+- Phase 6 execution: ensure `phase6-pre-research.yaml` differs from production on fib + llm
 - Phase 3 real-signal runs (2 trades) not comparable to mock MTF baseline (25 trades)
 
 ## Session Continuity
