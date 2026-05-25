@@ -13,7 +13,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "tsc --noEmit",
-    "export-trades-review": "tsx scripts/export-trades-review.ts"
+    "export-trades-review": "tsx scripts/export-trades-review.ts",
+    "backtest-matrix": "tsx scripts/run-backtest-matrix.ts"
   },
   "engines": {
     "node": ">=20"

@@ -1,0 +1,11 @@
+# Backtest experiment matrix — fixed window matches Phase 1 baseline
+from: "2024-10-01"
+to: "2024-12-31"
+mockSentiment: true
+experimentsDir: ./data/reports/experiments
+
+runs:
+  - id: baseline-mock
+    config: config/experiments/baseline-mock.yaml
+  - id: stricter-min-strength
+    config: config/experiments/stricter-min-strength.yaml
