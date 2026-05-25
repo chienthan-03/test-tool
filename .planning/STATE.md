@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 3 of 10 (Sentiment Filter Research) — **Complete**
-Plan: 03-06 of 6
-Status: Phase 3 done; ready to plan Phase 4
-Last activity: 2026-05-25 — Phase 3 executed (6/6 plans)
+Phase: 4 of 10 (MTF Entry Alignment Research)
+Plan: 04-01 of 7 (plans written)
+Status: Ready to execute
+Last activity: 2026-05-25 — Phase 4 planned (7 PLAN.md files)
 
 Progress: ███░░░░░░░ ~30%
 
@@ -29,6 +29,7 @@ Progress: ███░░░░░░░ ~30%
 | 1. Entry Baseline | 5 | 5 | Complete |
 | 2. Backtest Experiments | 6 | 6 | Complete |
 | 3. Sentiment Filters | 6 | 6 | Complete |
+| 4. MTF Entry Alignment | 7 | 7 | Planned |
 
 ## Accumulated Context
 
@@ -52,7 +53,8 @@ None yet.
 
 ### Blockers/Concerns
 
-None for Phase 4.
+- Phase 4 primary matrix must use `mockSentiment: true` (see MTF-EXPERIMENT-GRID.md)
+- Phase 3 real-signal runs (2 trades) are not comparable to mock MTF baseline (25 trades)
 
 ## Session Continuity
 
