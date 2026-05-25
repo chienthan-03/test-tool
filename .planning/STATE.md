@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 4 of 10 (MTF Entry Alignment Research) — **Complete**
-Plan: 04-07 of 7
-Status: Phase 4 done; ready to plan Phase 5
-Last activity: 2026-05-25 — Phase 4 executed (7/7 plans)
+Phase: 5 of 10 (Symbol Expansion)
+Plan: 05-01 of 5 (plans written)
+Status: Ready to execute
+Last activity: 2026-05-25 — Phase 5 planned (5 PLAN.md files)
 
 Progress: ████░░░░░░ ~40%
 
@@ -30,6 +30,7 @@ Progress: ████░░░░░░ ~40%
 | 2. Backtest Experiments | 6 | 6 | Complete |
 | 3. Sentiment Filters | 6 | 6 | Complete |
 | 4. MTF Entry Alignment | 7 | 7 | Complete |
+| 5. Symbol Expansion | 5 | 5 | Planned |
 
 ## Accumulated Context
 
@@ -54,6 +55,7 @@ None yet.
 
 ### Blockers/Concerns
 
+- Phase 5: prefetch klines for SOL/BNB/XRP before matrix (05-03)
 - Phase 6: combined sentiment + MTF validation matrix still needed
 - Phase 3 real-signal runs (2 trades) not comparable to mock MTF baseline (25 trades)
 
