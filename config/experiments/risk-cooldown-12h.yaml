@@ -1,3 +1,4 @@
+# experiment: risk-cooldown-12h — block re-entry 12h after loss
 mode: sim
 
 allowLive: true
@@ -108,7 +109,7 @@ risk:
   tpAtrMultiplier: 3.0
   trailingStop: false
   cooldownAfterLoss:
-    enabled: false
+    enabled: true
     durationHours: 12
 
 binance:

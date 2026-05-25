@@ -104,6 +104,12 @@ export const AppConfigSchema = z.object({
     slAtrMultiplier: z.number().positive(),
     tpAtrMultiplier: z.number().positive(),
     trailingStop: z.boolean(),
+    cooldownAfterLoss: z
+      .object({
+        enabled: z.boolean().default(false),
+        durationHours: z.number().positive().default(12),
+      })
+      .default({ enabled: false, durationHours: 12 }),
   }),
   binance: z.object({
     baseUrl: z.string().url(),

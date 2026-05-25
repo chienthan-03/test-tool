@@ -22,6 +22,7 @@ export class StrategyEngine {
     private readonly mtf: MtfEngine,
     private readonly pending: PendingSignalStore,
     private readonly hasPosition: (symbol: string) => Promise<boolean>,
+    private readonly isInCooldown: (symbol: string) => boolean = () => false,
     private readonly isPaused: () => boolean,
     private readonly getNow: () => Date = () => new Date(),
   ) {
@@ -40,6 +41,9 @@ export class StrategyEngine {
     }
 
     for (const symbol of signal.symbols) {
+      if (this.isInCooldown(symbol)) {
+        continue;
+      }
       if (
         this.config.strategy.onePositionPerSymbol &&
         (await this.hasPosition(symbol))
@@ -63,6 +67,11 @@ export class StrategyEngine {
 
     const pendingEntry = this.pending.get(event.symbol);
     if (!pendingEntry) {
+      return;
+    }
+
+    if (this.isInCooldown(event.symbol)) {
+      this.pending.remove(event.symbol);
       return;
     }
 

@@ -1,3 +1,4 @@
+# experiment: risk-atr-wide — ATR SL/TP 3/5 (no effect when MTF Fib exits used)
 mode: sim
 
 allowLive: true
@@ -104,8 +105,8 @@ risk:
   positionPercent: 15
   minNotionalUsdt: 5
   maxNotionalUsdt: null
-  slAtrMultiplier: 2.0
-  tpAtrMultiplier: 3.0
+  slAtrMultiplier: 3.0
+  tpAtrMultiplier: 5.0
   trailingStop: false
   cooldownAfterLoss:
     enabled: false

@@ -1,3 +1,4 @@
+# experiment: risk-fib-stop-786 — tighter Fib stop 0.786
 mode: sim
 
 allowLive: true
@@ -95,7 +96,7 @@ strategy:
     entryMin: 0.382
     entryMax: 0.618
     zoneTolerancePercent: 0.02
-    stopLevel: 0.886
+    stopLevel: 0.786
     targetExtension: 1.618
     stopBelowSwing: true
     stopBufferPercent: 0.002

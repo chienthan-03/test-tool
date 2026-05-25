@@ -159,6 +159,7 @@ describe('entry-gates intent integration', () => {
       pending,
       async () => false,
       () => false,
+      () => false,
     );
 
     new RiskEngine(

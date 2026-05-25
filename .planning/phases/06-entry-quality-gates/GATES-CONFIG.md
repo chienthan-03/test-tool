@@ -38,12 +38,15 @@ The real technical gates are **Elliott context** and **Fib entry** inside `MtfEn
 | Position size | `risk.positionPercent` |
 | SL/TP ATR multipliers | `risk.slAtrMultiplier`, `tpAtrMultiplier` |
 
-## Future (Phase 7)
+## Risk / cooldown (Phase 7)
 
-| Concern | Status |
-|---------|--------|
-| Per-symbol cooldown after loss | Not in schema yet |
-| Max positions | `strategy.onePositionPerSymbol` (existing) |
+| Concern | Config path |
+|---------|-------------|
+| Cooldown after loss | `risk.cooldownAfterLoss.enabled` |
+| Cooldown duration (hours) | `risk.cooldownAfterLoss.durationHours` |
+| Max positions | `strategy.onePositionPerSymbol` |
+
+See `.planning/phases/07-risk-exit-tuning/RISK-CONFIG.md` for Fib exit and position sizing.
 
 ## Production file
 

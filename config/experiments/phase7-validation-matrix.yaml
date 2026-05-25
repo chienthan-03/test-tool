@@ -1,0 +1,17 @@
+from: "2024-10-01"
+to: "2024-12-31"
+mockSentiment: true
+experimentsDir: ./data/reports/experiments/phase7-validation
+runs:
+  - id: risk-baseline
+    config: config/experiments/risk-baseline.yaml
+  - id: risk-fib-tp-2
+    config: config/experiments/risk-fib-tp-2.yaml
+  - id: risk-fib-stop-786
+    config: config/experiments/risk-fib-stop-786.yaml
+  - id: risk-cooldown-12h
+    config: config/experiments/risk-cooldown-12h.yaml
+  - id: risk-cooldown-24h
+    config: config/experiments/risk-cooldown-24h.yaml
+  - id: risk-atr-wide
+    config: config/experiments/risk-atr-wide.yaml

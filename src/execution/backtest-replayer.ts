@@ -21,6 +21,7 @@ import { intervalToMs } from '../market/timeframe.js';
 import { RiskEngine } from '../risk/risk-engine.js';
 import { MtfEngine } from '../strategy/mtf-engine.js';
 import { PendingSignalStore } from '../strategy/pending-signals.js';
+import { SymbolCooldownTracker } from '../strategy/symbol-cooldown.js';
 import { StrategyEngine } from '../strategy/strategy-engine.js';
 import { SignalRepository } from '../storage/repositories/signal-repo.js';
 
@@ -272,6 +273,9 @@ export class BacktestReplayer {
       }
     };
 
+    const cooldown = new SymbolCooldownTracker(backtestConfig, getNow);
+    cooldown.wire(bus);
+
     new StrategyEngine(
       backtestConfig,
       bus,
@@ -279,6 +283,7 @@ export class BacktestReplayer {
       mtf,
       pending,
       async (symbol) => (await broker.getPosition(symbol)) !== null,
+      (symbol) => cooldown.isBlocked(symbol),
       () => false,
       getNow,
     );

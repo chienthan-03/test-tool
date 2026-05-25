@@ -1,3 +1,4 @@
+# experiment: risk-cooldown-24h — block re-entry 24h after loss
 mode: sim
 
 allowLive: true
@@ -108,8 +109,8 @@ risk:
   tpAtrMultiplier: 3.0
   trailingStop: false
   cooldownAfterLoss:
-    enabled: false
-    durationHours: 12
+    enabled: true
+    durationHours: 24
 
 binance:
   baseUrl: https://fapi.binance.com

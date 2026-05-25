@@ -18,6 +18,7 @@
     "seed-signals": "tsx scripts/seed-signals-from-fixtures.ts",
     "export-signals-review": "tsx scripts/export-signals-review.ts",
     "export-backtest-trades": "tsx scripts/export-backtest-trades-review.ts",
+    "analyze-backtest-losses": "tsx scripts/analyze-backtest-losses.ts",
     "prefetch-klines": "tsx scripts/prefetch-klines.ts"
   },
   "engines": {

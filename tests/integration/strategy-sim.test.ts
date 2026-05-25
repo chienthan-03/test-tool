@@ -152,6 +152,7 @@ describe('strategy-sim integration', () => {
       pending,
       async () => false,
       () => false,
+      () => false,
     );
 
     new RiskEngine(

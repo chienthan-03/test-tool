@@ -16,7 +16,7 @@ None (trading bot on established Node/TS stack; patterns documented in `.plannin
 - [x] **Phase 4: MTF Entry Alignment Research** — Technical confirm and alignment experiments
 - [x] **Phase 5: Symbol Expansion** — Add SOLUSDT, BNBUSDT, XRPUSDT end-to-end
 - [x] **Phase 6: Entry Quality Gates** — Ship winning filters in code/config
-- [ ] **Phase 7: Risk & Exit Tuning** — SL/TP, cooldown, per-symbol position rules
+- [x] **Phase 7: Risk & Exit Tuning** — SL/TP, cooldown, per-symbol position rules
 - [ ] **Phase 8: Trade Review Workflow** — Export and structured fields for manual review
 - [ ] **Phase 9: Mode Parity Validation** — sim / backtest / testnet consistency checks
 - [ ] **Phase 10: Rollout & Documentation** — Operator docs, safety checklist, config guidance
@@ -119,12 +119,12 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 07-01: Audit current risk behavior on losing trades
-- [ ] 07-02: Experiment SL/TP multipliers via backtest framework
-- [ ] 07-03: Per-symbol cooldown / max open positions
-- [ ] 07-04: Implement chosen risk rules
-- [ ] 07-05: Tests for risk edge cases
-- [ ] 07-06: Backtest + manual review sample
+- [x] 07-01: Audit current risk behavior on losing trades
+- [x] 07-02: Experiment SL/TP multipliers via backtest framework
+- [x] 07-03: Per-symbol cooldown / max open positions
+- [x] 07-04: Implement chosen risk rules
+- [x] 07-05: Tests for risk edge cases
+- [x] 07-06: Backtest + manual review sample
 
 ### Phase 8: Trade Review Workflow
 **Goal**: Operator can export and review trades with enough context to judge win-rate improvement.

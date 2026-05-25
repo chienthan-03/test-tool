@@ -1,0 +1,58 @@
+{
+  "matrix": "config/experiments/phase7-validation-matrix.yaml",
+  "from": "2024-10-01",
+  "to": "2024-12-31",
+  "mockSentiment": true,
+  "executedAt": "2026-05-25T09:33:29.895Z",
+  "winner": "risk-baseline",
+  "runs": [
+    {
+      "id": "risk-baseline",
+      "config": "config/experiments/risk-baseline.yaml",
+      "totalTrades": 47,
+      "winRate": 0.2553191489361702,
+      "totalPnlUsdt": -258.94707779873806,
+      "maxDrawdownPct": 5.7336739695201455
+    },
+    {
+      "id": "risk-fib-tp-2",
+      "config": "config/experiments/risk-fib-tp-2.yaml",
+      "totalTrades": 46,
+      "winRate": 0.21739130434782608,
+      "totalPnlUsdt": -184.6943985994966,
+      "maxDrawdownPct": 7.259240059300956
+    },
+    {
+      "id": "risk-fib-stop-786",
+      "config": "config/experiments/risk-fib-stop-786.yaml",
+      "totalTrades": 47,
+      "winRate": 0.2553191489361702,
+      "totalPnlUsdt": -258.94707779873806,
+      "maxDrawdownPct": 5.7336739695201455
+    },
+    {
+      "id": "risk-cooldown-12h",
+      "config": "config/experiments/risk-cooldown-12h.yaml",
+      "totalTrades": 46,
+      "winRate": 0.21739130434782608,
+      "totalPnlUsdt": -403.11849732376123,
+      "maxDrawdownPct": 5.837424510132606
+    },
+    {
+      "id": "risk-cooldown-24h",
+      "config": "config/experiments/risk-cooldown-24h.yaml",
+      "totalTrades": 43,
+      "winRate": 0.20930232558139536,
+      "totalPnlUsdt": -363.5666528726153,
+      "maxDrawdownPct": 5.949649515051057
+    },
+    {
+      "id": "risk-atr-wide",
+      "config": "config/experiments/risk-atr-wide.yaml",
+      "totalTrades": 47,
+      "winRate": 0.2553191489361702,
+      "totalPnlUsdt": -258.94707779873806,
+      "maxDrawdownPct": 5.7336739695201455
+    }
+  ]
+}

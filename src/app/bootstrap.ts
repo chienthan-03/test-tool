@@ -19,6 +19,7 @@ import { SignalMerger } from '../sentiment/signal-merger.js';
 import { RiskEngine } from '../risk/risk-engine.js';
 import { MtfEngine } from '../strategy/mtf-engine.js';
 import { PendingSignalStore } from '../strategy/pending-signals.js';
+import { SymbolCooldownTracker } from '../strategy/symbol-cooldown.js';
 import { StrategyEngine } from '../strategy/strategy-engine.js';
 import { openDatabase } from '../storage/db.js';
 import { migrate } from '../storage/migrate.js';
@@ -210,6 +211,8 @@ const wireTradingStack = async (
 
   const mtf = new MtfEngine(config, store);
   const pending = new PendingSignalStore();
+  const cooldown = new SymbolCooldownTracker(config);
+  cooldown.wire(bus);
   const strategy = new StrategyEngine(
     config,
     bus,
@@ -217,6 +220,7 @@ const wireTradingStack = async (
     mtf,
     pending,
     async (symbol) => (await adapter.getPosition(symbol)) !== null,
+    (symbol) => cooldown.isBlocked(symbol),
     isPaused,
   );
 
