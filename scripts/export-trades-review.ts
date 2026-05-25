@@ -2,6 +2,7 @@ import { writeFileSync } from 'node:fs';
 import { loadEnvFile } from '../src/config/load-env.js';
 import { loadConfigWithEnv } from '../src/config/loader.js';
 import { openDatabase } from '../src/storage/db.js';
+import { csvWithHeader, sideToDirection, type TradeReviewRow } from './lib/trade-review-csv.js';
 
 loadEnvFile();
 
@@ -24,45 +25,6 @@ const parseArgs = (): { out: string; limit: number; configPath: string } => {
   return { out, limit, configPath };
 };
 
-const escapeCsv = (value: string | number | null | undefined): string => {
-  if (value === null || value === undefined) {
-    return '';
-  }
-  const s = String(value);
-  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-    return `"${s.replace(/"/g, '""')}"`;
-  }
-  return s;
-};
-
-const HEADERS = [
-  'id',
-  'mode',
-  'symbol',
-  'side',
-  'quantity',
-  'entry_price',
-  'exit_price',
-  'stop_loss',
-  'take_profit',
-  'pnl_usdt',
-  'fees_usdt',
-  'news_id',
-  'news_signal_id',
-  'opened_at',
-  'closed_at',
-  'setup_quality',
-  'news_quality',
-  'mtf_aligned',
-  'would_take_again',
-  'failure_category',
-  'notes',
-] as const;
-
-const { out, limit, configPath } = parseArgs();
-const config = loadConfigWithEnv(configPath);
-const db = openDatabase(config.storage.sqlitePath);
-
 type TradeRow = {
   id: string;
   mode: string;
@@ -81,6 +43,10 @@ type TradeRow = {
   closed_at: string | null;
 };
 
+const { out, limit, configPath } = parseArgs();
+const config = loadConfigWithEnv(configPath);
+const db = openDatabase(config.storage.sqlitePath);
+
 const rows = db
   .prepare(
     `SELECT id, mode, symbol, side, quantity, entry_price, exit_price, stop_loss, take_profit,
@@ -92,35 +58,26 @@ const rows = db
   )
   .all(limit) as TradeRow[];
 
-const lines: string[] = [HEADERS.join(',')];
+const csvRows: TradeReviewRow[] = rows.map((row) => ({
+  id: row.id,
+  source: 'sqlite',
+  mode: row.mode,
+  symbol: row.symbol,
+  side: row.side,
+  direction: sideToDirection(row.side),
+  quantity: row.quantity,
+  entry_price: row.entry_price,
+  exit_price: row.exit_price ?? '',
+  stop_loss: row.stop_loss,
+  take_profit: row.take_profit,
+  pnl_usdt: row.pnl_usdt ?? '',
+  fees_usdt: row.fees_usdt ?? '',
+  news_id: row.news_id ?? '',
+  news_signal_id: row.news_signal_id ?? '',
+  opened_at: row.opened_at,
+  closed_at: row.closed_at ?? '',
+}));
 
-for (const row of rows) {
-  const cells = [
-    row.id,
-    row.mode,
-    row.symbol,
-    row.side,
-    row.quantity,
-    row.entry_price,
-    row.exit_price,
-    row.stop_loss,
-    row.take_profit,
-    row.pnl_usdt,
-    row.fees_usdt,
-    row.news_id,
-    row.news_signal_id,
-    row.opened_at,
-    row.closed_at,
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-  ].map(escapeCsv);
-  lines.push(cells.join(','));
-}
-
-writeFileSync(out, `${lines.join('\n')}\n`, 'utf8');
+writeFileSync(out, csvWithHeader(csvRows), 'utf8');
 console.error(`Exported ${rows.length} closed trade(s) to ${out}`);
 db.close();

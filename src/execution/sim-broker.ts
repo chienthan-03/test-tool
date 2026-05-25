@@ -261,6 +261,7 @@ export class SimBroker implements ExecutionAdapter {
       pnl: netPnl,
       exitPrice,
       feesUsdt: pos.entryFee + exitFee,
+      exitReason: _reason,
     };
     this.callbacks.onPositionClosed?.(closed);
   }

@@ -1,3 +1,4 @@
+# experiment: review-capture-gates — production + entryGates.captureRejects for review exports
 mode: sim
 
 allowLive: true
@@ -107,9 +108,6 @@ risk:
   slAtrMultiplier: 2.0
   tpAtrMultiplier: 3.0
   trailingStop: false
-  cooldownAfterLoss:
-    enabled: false
-    durationHours: 12
 
 binance:
   baseUrl: https://fapi.binance.com
@@ -150,4 +148,4 @@ logging:
 entryGates:
   enabled: true
   logRejects: false
-  captureRejects: false
+  captureRejects: true

@@ -146,8 +146,9 @@ export const AppConfigSchema = z.object({
     .object({
       enabled: z.boolean().default(true),
       logRejects: z.boolean().default(false),
+      captureRejects: z.boolean().default(false),
     })
-    .default({ enabled: true, logRejects: false }),
+    .default({ enabled: true, logRejects: false, captureRejects: false }),
 });
 
 export type AppConfig = z.infer<typeof AppConfigSchema>;

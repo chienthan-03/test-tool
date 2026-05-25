@@ -112,6 +112,16 @@ export interface Position {
   unrealizedPnl?: number;
 }
 
+export type ExitReason = 'SL' | 'TP';
+
+export interface GateRejectRecord {
+  symbol: string;
+  direction: SignalDirection;
+  reason: string;
+  stage: 'context' | 'entry';
+  at: string;
+}
+
 export interface BacktestTradeRecord {
   symbol: string;
   side: OrderSide;
@@ -119,6 +129,9 @@ export interface BacktestTradeRecord {
   exit: number;
   pnl: number;
   newsId: string;
+  exitReason?: ExitReason;
+  stopLoss?: number;
+  takeProfit?: number;
 }
 
 export interface BacktestReport {
@@ -133,6 +146,7 @@ export interface BacktestReport {
   maxDrawdownPct: number;
   sharpe?: number;
   trades: BacktestTradeRecord[];
+  gateRejects?: GateRejectRecord[];
 }
 
 /** Binance LOT_SIZE / PRICE_FILTER / MIN_NOTIONAL for a symbol. */
@@ -173,12 +187,14 @@ export interface PositionClosedEvent {
   pnl: number;
   exitPrice: number;
   feesUsdt: number;
+  exitReason?: ExitReason;
 }
 
 export interface AppEvents {
   'news:raw': NewsItem;
   'news:signal': NewsSignal;
   'market:candleClose': CandleCloseEvent;
+  'strategy:gateReject': GateRejectRecord;
   'strategy:intent': TradeIntent;
   'risk:orderPlan': OrderPlan;
   'execution:fill': Fill;

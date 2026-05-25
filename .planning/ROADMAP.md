@@ -17,7 +17,7 @@ None (trading bot on established Node/TS stack; patterns documented in `.plannin
 - [x] **Phase 5: Symbol Expansion** — Add SOLUSDT, BNBUSDT, XRPUSDT end-to-end
 - [x] **Phase 6: Entry Quality Gates** — Ship winning filters in code/config
 - [x] **Phase 7: Risk & Exit Tuning** — SL/TP, cooldown, per-symbol position rules
-- [ ] **Phase 8: Trade Review Workflow** — Export and structured fields for manual review
+- [x] **Phase 8: Trade Review Workflow** — Export and structured fields for manual review
 - [ ] **Phase 9: Mode Parity Validation** — sim / backtest / testnet consistency checks
 - [ ] **Phase 10: Rollout & Documentation** — Operator docs, safety checklist, config guidance
 
@@ -133,11 +133,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 08-01: Define review checklist (fields: news id, signal, intent, fills, PnL)
-- [ ] 08-02: CLI command or script to export trades (CSV/JSON)
-- [ ] 08-03: Enrich trade records with gate veto reasons if applicable
-- [ ] 08-04: README section for review process
-- [ ] 08-05: Pilot review on baseline vs new gates dataset
+- [x] 08-01: Define review checklist (fields: news id, signal, intent, fills, PnL)
+- [x] 08-02: CLI command or script to export trades (CSV/JSON)
+- [x] 08-03: Enrich trade records with gate veto reasons if applicable
+- [x] 08-04: README section for review process
+- [x] 08-05: Pilot review on baseline vs new gates dataset
 
 ### Phase 9: Mode Parity Validation
 **Goal**: Prove gate/risk changes behave consistently in sim, backtest replay, and testnet.

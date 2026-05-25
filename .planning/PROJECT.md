@@ -14,6 +14,7 @@ A Node.js CLI bot that trades Binance USDⓈ-M Futures from crypto RSS news sent
 
 - ✓ **Entry quality gates (Phase 6, 2026-05-25):** `EntryGate` MTF veto layer; production `config/default.yaml` — rule-only sentiment (`llm.enabled: false`), tighter fib (`zoneTolerancePercent: 0.02`), 5-symbol universe; mock validation 47 trades / 25.5% win vs pre-research 50 / 24.0%
 - ✓ **Risk & exit tuning (Phase 7, 2026-05-25):** `SymbolCooldownTracker` + `risk.cooldownAfterLoss` (default off); risk matrix validated Phase 6 exits as baseline; `analyze-backtest-losses` CLI
+- ✓ **Trade review workflow (Phase 8, 2026-05-25):** Unified `export-trade-review` CSV schema; backtest `exitReason` + optional `gateRejects`; pilot pre-research vs production exports
 - ✓ RSS ingest, dedupe, and SQLite persistence — existing (`src/news/`, `src/storage/repositories/news-repo.ts`)
 - ✓ Rule-based sentiment scoring with optional OpenRouter LLM — existing (`src/sentiment/rule-scorer.ts`, `llm-gateway.ts`)
 - ✓ Symbol whitelist mapping from news — existing (`src/news/symbol-mapper.ts`)
@@ -29,7 +30,7 @@ A Node.js CLI bot that trades Binance USDⓈ-M Futures from crypto RSS news sent
 - [ ] **Research phase:** Document current entry path and baseline metrics (win rate, trade count) per mode using backtest + DB trade export
 - [ ] **Filter experiments:** Cooldown / risk experiments via backtest matrix (Phase 7+)
 - [ ] **Higher-quality entries:** Further tuning after Phase 7 risk/cooldown research
-- [ ] **Trade review workflow (Phase 8):** Export and structured fields for manual review
+- [ ] **Mode parity (Phase 9):** sim / backtest / testnet consistency
 - [ ] **Review workflow:** Make manual trade review practical (structured logs/DB fields or export) to judge “win rate improved”
 - [ ] **Parity across modes:** Logic changes must behave consistently in sim, backtest replay, and testnet
 
@@ -74,4 +75,4 @@ A Node.js CLI bot that trades Binance USDⓈ-M Futures from crypto RSS news sent
 | Phase 7 risk | Cooldown optional; Fib exits unchanged | Baseline wins win-rate goal on mock matrix | ✓ |
 
 ---
-*Last updated: 2026-05-25 after Phase 7 execution*
+*Last updated: 2026-05-25 after Phase 8 execution*

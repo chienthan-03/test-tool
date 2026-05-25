@@ -1,4 +1,5 @@
 import type { AppConfig } from '../config/schema.js';
+import type { AppEventBus } from '../core/event-bus.js';
 import { createLogger } from '../core/logger.js';
 import type { SignalDirection } from '../core/types.js';
 import type { MtfEngine, MtfEntryResult } from './mtf-engine.js';
@@ -18,6 +19,8 @@ export class EntryGate {
   constructor(
     private readonly config: AppConfig,
     private readonly mtf: MtfEngine,
+    private readonly bus?: AppEventBus,
+    private readonly getNow: () => Date = () => new Date(),
   ) {
     this.log = createLogger({
       level: config.logging.level,
@@ -67,6 +70,16 @@ export class EntryGate {
     reason: string,
     stage: EntryGateStage,
   ): void {
+    if (this.config.entryGates.captureRejects && this.bus) {
+      this.bus.emit('strategy:gateReject', {
+        symbol,
+        direction,
+        reason,
+        stage,
+        at: this.getNow().toISOString(),
+      });
+    }
+
     if (!this.config.entryGates.logRejects) {
       return;
     }

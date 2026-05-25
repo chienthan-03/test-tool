@@ -26,7 +26,7 @@ export class StrategyEngine {
     private readonly isPaused: () => boolean,
     private readonly getNow: () => Date = () => new Date(),
   ) {
-    this.entryGate = new EntryGate(config, mtf);
+    this.entryGate = new EntryGate(config, mtf, bus, getNow);
     this.bus.on('news:signal', (signal) => {
       void this.handleNewsSignal(signal);
     });

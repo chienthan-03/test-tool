@@ -8,6 +8,7 @@ import type {
   BacktestTradeRecord,
   Candle,
   Fill,
+  GateRejectRecord,
   NewsSignal,
   OrderPlan,
   OrderSide,
@@ -218,10 +219,18 @@ export class BacktestReplayer {
     await broker.connect();
 
     const trades: BacktestTradeRecord[] = [];
+    const gateRejects: GateRejectRecord[] = [];
     const equityCurve: number[] = [backtestConfig.sim.initialBalanceUsdt];
     const pendingPlans = new Map<string, OrderPlan>();
     const intentMeta = new Map<string, { newsId: string }>();
-    const openTradeMeta = new Map<string, { newsId: string; side: OrderSide; entry: number }>();
+    const openTradeMeta = new Map<
+      string,
+      { newsId: string; side: OrderSide; entry: number; stopLoss: number; takeProfit: number }
+    >();
+
+    bus.on('strategy:gateReject', (reject) => {
+      gateRejects.push(reject);
+    });
 
     bus.on('strategy:intent', (intent: TradeIntent) => {
       intentMeta.set(intent.id, { newsId: intent.newsId });
@@ -238,6 +247,8 @@ export class BacktestReplayer {
         newsId: meta?.newsId ?? 'unknown',
         side: fill.side,
         entry: fill.price,
+        stopLoss: plan?.stopLoss ?? 0,
+        takeProfit: plan?.takeProfit ?? 0,
       });
     });
 
@@ -251,6 +262,9 @@ export class BacktestReplayer {
           exit: event.exitPrice,
           pnl: event.pnl,
           newsId: meta.newsId,
+          exitReason: event.exitReason,
+          stopLoss: meta.stopLoss,
+          takeProfit: meta.takeProfit,
         });
         openTradeMeta.delete(event.symbol);
       }
@@ -346,6 +360,7 @@ export class BacktestReplayer {
       totalPnlUsdt,
       maxDrawdownPct: computeMaxDrawdownPct(equityCurve),
       trades,
+      gateRejects: gateRejects.length > 0 ? gateRejects : undefined,
     };
 
     await mkdir(config.backtest.reportDir, { recursive: true });
