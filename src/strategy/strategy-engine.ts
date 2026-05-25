@@ -8,10 +8,13 @@ import type {
   TradeIntent,
 } from '../core/types.js';
 import type { KlineStore } from '../market/kline-store.js';
+import { EntryGate } from './entry-gate.js';
 import type { MtfEngine } from './mtf-engine.js';
 import type { PendingSignalStore } from './pending-signals.js';
 
 export class StrategyEngine {
+  private readonly entryGate: EntryGate;
+
   constructor(
     private readonly config: AppConfig,
     private readonly bus: AppEventBus,
@@ -22,6 +25,7 @@ export class StrategyEngine {
     private readonly isPaused: () => boolean,
     private readonly getNow: () => Date = () => new Date(),
   ) {
+    this.entryGate = new EntryGate(config, mtf);
     this.bus.on('news:signal', (signal) => {
       void this.handleNewsSignal(signal);
     });
@@ -78,19 +82,16 @@ export class StrategyEngine {
       }
     }
 
-    const context = this.mtf.evaluateContext(
+    const gate = this.entryGate.evaluate(
       event.symbol,
       signal.direction,
       signal.strength,
     );
-    if (!context.allow) {
+    if (!gate.allow || !gate.entry) {
       return;
     }
 
-    const entry = this.mtf.evaluateEntry(event.symbol, signal.direction);
-    if (!entry.confirm) {
-      return;
-    }
+    const entry = gate.entry;
 
     const side: OrderSide = signal.direction === 'long' ? 'BUY' : 'SELL';
     const intent: TradeIntent = {

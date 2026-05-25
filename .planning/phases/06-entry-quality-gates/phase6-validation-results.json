@@ -1,0 +1,31 @@
+{
+  "matrix": "config/experiments/phase6-validation-matrix.yaml",
+  "from": "2024-10-01",
+  "to": "2024-12-31",
+  "mockSentiment": true,
+  "executedAt": "2026-05-25T09:20:31.450Z",
+  "runs": [
+    {
+      "id": "pre-research",
+      "config": "config/experiments/phase6-pre-research.yaml",
+      "configSha256": "18fc49326681b4cfd009b273d634e1175978f30cdcef20a75aa58e173dfb1ebe",
+      "totalTrades": 50,
+      "wins": 12,
+      "losses": 38,
+      "winRate": 0.24,
+      "totalPnlUsdt": -274.6336095678577,
+      "maxDrawdownPct": 6.896026219724531
+    },
+    {
+      "id": "phase6-production",
+      "config": "config/experiments/phase6-production.yaml",
+      "configSha256": "698ab1872f6a36a22752799a96844a10f7f394050640b95bf8dca80fa598c465",
+      "totalTrades": 47,
+      "wins": 12,
+      "losses": 35,
+      "winRate": 0.2553191489361702,
+      "totalPnlUsdt": -258.94707779873806,
+      "maxDrawdownPct": 5.7336739695201455
+    }
+  ]
+}

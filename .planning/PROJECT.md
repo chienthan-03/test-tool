@@ -12,6 +12,7 @@ A Node.js CLI bot that trades Binance USDⓈ-M Futures from crypto RSS news sent
 
 ### Validated
 
+- ✓ **Entry quality gates (Phase 6, 2026-05-25):** `EntryGate` MTF veto layer; production `config/default.yaml` — rule-only sentiment (`llm.enabled: false`), tighter fib (`zoneTolerancePercent: 0.02`), 5-symbol universe; mock validation 47 trades / 25.5% win vs pre-research 50 / 24.0%
 - ✓ RSS ingest, dedupe, and SQLite persistence — existing (`src/news/`, `src/storage/repositories/news-repo.ts`)
 - ✓ Rule-based sentiment scoring with optional OpenRouter LLM — existing (`src/sentiment/rule-scorer.ts`, `llm-gateway.ts`)
 - ✓ Symbol whitelist mapping from news — existing (`src/news/symbol-mapper.ts`)
@@ -25,10 +26,9 @@ A Node.js CLI bot that trades Binance USDⓈ-M Futures from crypto RSS news sent
 ### Active
 
 - [ ] **Research phase:** Document current entry path and baseline metrics (win rate, trade count) per mode using backtest + DB trade export
-- [ ] **Filter experiments:** Compare MTF alignment rules and cooldown/position limits via backtest matrix (sentiment grid done — see `.planning/phases/03-sentiment-filters/`)
-- [x] **Sentiment filter research (Phase 3):** Fixture matrix + recommendation → `config/experiments/sentiment-recommended.yaml` (`llm.enabled: false` pending Phase 6 merge)
-- [ ] **Higher-quality entries:** Implement winning filter set(s) in code/config with clear rationale tied to research findings
-- [x] **Symbol expansion (Phase 5):** SOLUSDT, BNBUSDT, XRPUSDT in `config/default.yaml`, kline prefetch, backtest matrix — see `.planning/phases/05-symbol-expansion/`
+- [ ] **Filter experiments:** Cooldown / risk experiments via backtest matrix (Phase 7+)
+- [ ] **Higher-quality entries:** Further tuning after Phase 7 risk/cooldown research
+- [ ] **Risk & exit tuning (Phase 7):** SL/TP multipliers, per-symbol cooldown after loss
 - [ ] **Review workflow:** Make manual trade review practical (structured logs/DB fields or export) to judge “win rate improved”
 - [ ] **Parity across modes:** Logic changes must behave consistently in sim, backtest replay, and testnet
 
@@ -66,9 +66,10 @@ A Node.js CLI bot that trades Binance USDⓈ-M Futures from crypto RSS news sent
 | Manual trade review as primary metric | User-selected; aligns with operational validation | — Pending |
 | No UI / no new exchange / no ML training | Explicit v1 boundaries | — Pending |
 | GSD workflow: YOLO + comprehensive depth + parallel execution | User preference for planning/execution style | — Pending |
-| Sentiment preset (Phase 3) | `sentiment-no-llm` / `sentiment-recommended.yaml` | Matrix + discard analysis; identical metrics on fixtures | — Pending validation in Phase 6 |
-| MTF preset (Phase 4) | `mtf-tighter-fib` / `mtf-recommended.yaml` | Mock matrix: 36.4% win, 22 trades vs 32%/25 baseline | — Pending Phase 6 merge |
-| Symbol universe (Phase 5) | 5 symbols in `default.yaml` | Expanded mock backtest: 47 trades, 25.5% win | — Phase 6 combined validation |
+| Sentiment preset (Phase 3) | `llm.enabled: false` in `default.yaml` | Merged Phase 6 | ✓ |
+| MTF preset (Phase 4) | `zoneTolerancePercent: 0.02` | Merged Phase 6; 5-sym validation 25.5% win | ✓ |
+| Symbol universe (Phase 5) | 5 symbols in `default.yaml` | Production default | ✓ |
+| Phase 6 production config | `config/default.yaml` | EntryGate + merged presets | ✓ |
 
 ---
-*Last updated: 2026-05-25 after Phase 3 execution*
+*Last updated: 2026-05-25 after Phase 6 execution*

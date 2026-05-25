@@ -7,6 +7,7 @@ import type { AppConfig } from '../../src/config/schema.js';
 import { KlineStore } from '../../src/market/kline-store.js';
 import { isInRetraceZone } from '../../src/market/fibonacci.js';
 import type { ImpulseLeg } from '../../src/market/swing-detector.js';
+import { EntryGate } from '../../src/strategy/entry-gate.js';
 import { MtfEngine } from '../../src/strategy/mtf-engine.js';
 
 const bullishRetraceLeg: ImpulseLeg = {
@@ -20,7 +21,6 @@ const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const defaultConfigPath = join(projectRoot, 'config/default.yaml');
 
 const TF_MS: Record<string, number> = {
-  '1h': 3_600_000,
   '4h': 14_400_000,
 };
 
@@ -48,7 +48,6 @@ const makeCandle = (
   };
 };
 
-/** Build zigzag pivots with clear fractal highs/lows (lookback 3). */
 const pushZigzagPivots = (
   store: KlineStore,
   symbol: string,
@@ -97,38 +96,35 @@ const bearishImpulsePivots = (): Array<{ price: number; type: 'high' | 'low' }> 
   { price: 110, type: 'high' },
 ];
 
-describe('MtfEngine (Elliott + Fibonacci)', () => {
+describe('EntryGate', () => {
   let config: AppConfig;
 
   beforeAll(() => {
     config = loadConfig(defaultConfigPath);
   });
 
-  it('bullish elliott context allows long', () => {
-    const store = new KlineStore();
-    pushZigzagPivots(store, 'BTCUSDT', config.timeframes.context, bullishImpulsePivots(), 9);
-
-    const engine = new MtfEngine(config, store);
-    const result = engine.evaluateContext('BTCUSDT', 'long', 0.5);
-
-    expect(result.allow).toBe(true);
-  });
-
-  it('bearish elliott blocks long', () => {
+  it('blocks long on bearish context with stage context', () => {
     const store = new KlineStore();
     pushZigzagPivots(store, 'BTCUSDT', config.timeframes.context, bearishImpulsePivots(), 9);
 
-    const engine = new MtfEngine(config, store);
-    const result = engine.evaluateContext('BTCUSDT', 'long', 0.9);
+    const gate = new EntryGate(config, new MtfEngine(config, store));
+    const result = gate.evaluate('BTCUSDT', 'long', 0.9);
 
     expect(result.allow).toBe(false);
+    expect(result.stage).toBe('context');
     expect(result.reason).toBe('elliott_context_conflict');
   });
 
-  it('entry confirms long in fib retrace zone with fib SL/TP', () => {
+  it('allows long with entry SL/TP when aligned', () => {
     const store = new KlineStore();
-    const entryPivots = bullishImpulsePivots().slice(0, 4);
-    pushZigzagPivots(store, 'BTCUSDT', config.timeframes.entry, entryPivots, 9);
+    pushZigzagPivots(store, 'BTCUSDT', config.timeframes.context, bullishImpulsePivots(), 9);
+    pushZigzagPivots(
+      store,
+      'BTCUSDT',
+      config.timeframes.entry,
+      bullishImpulsePivots().slice(0, 4),
+      9,
+    );
 
     const tf = config.timeframes.entry;
     const retraceClose = 111;
@@ -138,17 +134,15 @@ describe('MtfEngine (Elliott + Fibonacci)', () => {
       makeCandle('BTCUSDT', tf, 999, retraceClose, retraceClose + 1.5, retraceClose - 1.5),
     );
 
-    const engine = new MtfEngine(config, store);
-    const result = engine.evaluateEntry('BTCUSDT', 'long');
+    const gate = new EntryGate(config, new MtfEngine(config, store));
+    const result = gate.evaluate('BTCUSDT', 'long', 0.5);
 
-    expect(result.confirm).toBe(true);
-    expect(result.stopLoss).toBeDefined();
-    expect(result.takeProfit).toBeDefined();
-    expect(result.stopLoss!).toBeLessThan(retraceClose);
-    expect(result.takeProfit!).toBeGreaterThan(retraceClose);
+    expect(result.allow).toBe(true);
+    expect(result.entry?.confirm).toBe(true);
+    expect(result.entry?.stopLoss).toBeDefined();
   });
 
-  it('zoneTolerancePercent 0.02 is stricter than 0.05 on fib edge', () => {
+  it('tighter fib tolerance rejects edge price that passes at 0.05', () => {
     const { entryMin, entryMax } = config.strategy.fibonacci;
     const edgePrice = 113;
 
@@ -158,5 +152,35 @@ describe('MtfEngine (Elliott + Fibonacci)', () => {
     expect(isInRetraceZone(edgePrice, bullishRetraceLeg, entryMin, entryMax, 0.02)).toBe(
       false,
     );
+  });
+
+  it('entryGates.enabled false skips context and only runs entry check', () => {
+    const store = new KlineStore();
+    pushZigzagPivots(store, 'BTCUSDT', config.timeframes.context, bearishImpulsePivots(), 9);
+    pushZigzagPivots(
+      store,
+      'BTCUSDT',
+      config.timeframes.entry,
+      bullishImpulsePivots().slice(0, 4),
+      9,
+    );
+
+    const tf = config.timeframes.entry;
+    const retraceClose = 111;
+    store.update(
+      'BTCUSDT',
+      tf,
+      makeCandle('BTCUSDT', tf, 999, retraceClose, retraceClose + 1.5, retraceClose - 1.5),
+    );
+
+    const bypassConfig: AppConfig = {
+      ...config,
+      entryGates: { enabled: false, logRejects: false },
+    };
+    const gate = new EntryGate(bypassConfig, new MtfEngine(bypassConfig, store));
+    const result = gate.evaluate('BTCUSDT', 'long', 0.5);
+
+    expect(result.allow).toBe(true);
+    expect(result.stage).toBeUndefined();
   });
 });

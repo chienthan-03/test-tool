@@ -1,3 +1,4 @@
+# experiment: phase6-production — merged Phase 3+4+5 research (matches config/default.yaml)
 mode: sim
 
 allowLive: true

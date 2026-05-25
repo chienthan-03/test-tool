@@ -12,10 +12,10 @@ None (trading bot on established Node/TS stack; patterns documented in `.plannin
 
 - [x] **Phase 1: Entry Baseline & Observability** — Map the live entry path and capture baseline trade/backtest metrics
 - [x] **Phase 2: Backtest Experiment Framework** — Runnable matrix to compare configs reproducibly
-- [ ] **Phase 3: Sentiment Filter Research** — Threshold and LLM-gate experiments from data
-- [ ] **Phase 4: MTF Entry Alignment Research** — Technical confirm and alignment experiments
-- [ ] **Phase 5: Symbol Expansion** — Add SOLUSDT, BNBUSDT, XRPUSDT end-to-end
-- [ ] **Phase 6: Entry Quality Gates** — Ship winning filters in code/config
+- [x] **Phase 3: Sentiment Filter Research** — Threshold and LLM-gate experiments from data
+- [x] **Phase 4: MTF Entry Alignment Research** — Technical confirm and alignment experiments
+- [x] **Phase 5: Symbol Expansion** — Add SOLUSDT, BNBUSDT, XRPUSDT end-to-end
+- [x] **Phase 6: Entry Quality Gates** — Ship winning filters in code/config
 - [ ] **Phase 7: Risk & Exit Tuning** — SL/TP, cooldown, per-symbol position rules
 - [ ] **Phase 8: Trade Review Workflow** — Export and structured fields for manual review
 - [ ] **Phase 9: Mode Parity Validation** — sim / backtest / testnet consistency checks
@@ -102,14 +102,14 @@ Plans:
 **Plans**: 8 plans
 
 Plans:
-- [ ] 06-01: Design gate interface (single place to veto intents)
-- [ ] 06-02: Implement sentiment gates from Phase 3 preset
-- [ ] 06-03: Implement MTF/technical gates from Phase 4 preset
-- [ ] 06-04: Config surface for gates (YAML + schema)
-- [ ] 06-05: Unit tests for veto paths
-- [ ] 06-06: Integration test intent → plan with gates on
-- [ ] 06-07: Backtest validation vs baseline
-- [ ] 06-08: Update PROJECT.md validated requirements
+- [x] 06-01: Design gate interface (single place to veto intents)
+- [x] 06-02: Implement sentiment gates from Phase 3 preset
+- [x] 06-03: Implement MTF/technical gates from Phase 4 preset
+- [x] 06-04: Config surface for gates (YAML + schema)
+- [x] 06-05: Unit tests for veto paths
+- [x] 06-06: Integration test intent → plan with gates on
+- [x] 06-07: Backtest validation vs baseline
+- [x] 06-08: Update PROJECT.md validated requirements
 
 ### Phase 7: Risk & Exit Tuning
 **Goal**: Tune SL/TP, position limits, and per-symbol cooldown to protect win rate after entry.

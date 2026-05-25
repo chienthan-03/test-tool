@@ -136,6 +136,12 @@ export const AppConfigSchema = z.object({
   }),
   storage: z.object({ sqlitePath: z.string() }),
   logging: z.object({ level: z.string(), pretty: z.boolean() }),
+  entryGates: z
+    .object({
+      enabled: z.boolean().default(true),
+      logRejects: z.boolean().default(false),
+    })
+    .default({ enabled: true, logRejects: false }),
 });
 
 export type AppConfig = z.infer<typeof AppConfigSchema>;

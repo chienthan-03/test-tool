@@ -1,3 +1,4 @@
+# experiment: phase6-pre-research — before Phase 3/4 merges (llm on, fib 0.05)
 mode: sim
 
 allowLive: true
@@ -68,7 +69,7 @@ sentiment:
         keywords: [etf, approval, inflow]
         impact: 2
   llm:
-    enabled: false
+    enabled: true
     provider: openrouter
     baseUrl: https://openrouter.ai/api/v1
     model: openai/gpt-oss-120b:free
@@ -94,7 +95,7 @@ strategy:
   fibonacci:
     entryMin: 0.382
     entryMax: 0.618
-    zoneTolerancePercent: 0.02
+    zoneTolerancePercent: 0.05
     stopLevel: 0.886
     targetExtension: 1.618
     stopBelowSwing: true
