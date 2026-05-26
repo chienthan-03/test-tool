@@ -32,6 +32,43 @@ export const TagRuleSchema = z.object({
 
 export const AlternateEntryPathIdSchema = z.enum(['breakout', 'emaMomentum']);
 
+export const EntryProfileSchema = z.enum(['swing', 'intraday']);
+
+export const ContextEmaSchema = z.object({
+  fastPeriod: z.number().int().min(2).max(100).default(20),
+  slowPeriod: z.number().int().min(3).max(200).default(50),
+  flatPercent: z.number().min(0).max(0.01).default(0.0005),
+});
+
+export const SwingProfileSchema = z.object({
+  contextMode: z.literal('elliott'),
+  entryPaths: z.object({ primary: z.literal('fib') }),
+  useAlternateFallback: z.boolean().default(true),
+});
+
+export const IntradayProfileSchema = z.object({
+  contextMode: z.literal('emaTrend'),
+  contextEma: ContextEmaSchema.default({ fastPeriod: 20, slowPeriod: 50, flatPercent: 0.0005 }),
+  entryPaths: z.object({
+    order: z.array(AlternateEntryPathIdSchema).min(1).default(['breakout', 'emaMomentum']),
+  }),
+  positionScale: z.number().min(0.1).max(1).default(0.75),
+});
+
+export const StrategyProfilesSchema = z.object({
+  swing: SwingProfileSchema.default({
+    contextMode: 'elliott',
+    entryPaths: { primary: 'fib' },
+    useAlternateFallback: true,
+  }),
+  intraday: IntradayProfileSchema.default({
+    contextMode: 'emaTrend',
+    contextEma: { fastPeriod: 20, slowPeriod: 50, flatPercent: 0.0005 },
+    entryPaths: { order: ['breakout', 'emaMomentum'] },
+    positionScale: 0.75,
+  }),
+});
+
 export const BreakoutEntryConfigSchema = z.object({
   enabled: z.boolean().default(true),
   lookbackBars: z.number().int().min(5).max(200).default(20),
@@ -127,6 +164,8 @@ export const AppConfigSchema = z.object({
       stopBelowSwing: z.boolean().default(true),
       stopBufferPercent: z.number().min(0).max(0.05).default(0.002),
     }),
+    entryProfile: EntryProfileSchema.default('swing'),
+    profiles: StrategyProfilesSchema,
     alternateEntries: AlternateEntriesConfigSchema.default({
       enabled: false,
       order: ['breakout', 'emaMomentum'],

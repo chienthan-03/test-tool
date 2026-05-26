@@ -30,6 +30,13 @@ describe('config-loader', () => {
     expect(config.strategy.alternateEntries.positionScale).toBe(1);
   });
 
+  it('loads entryProfile and profiles defaults', () => {
+    const config = loadConfig(defaultConfigPath);
+    expect(config.strategy.entryProfile).toBe('swing');
+    expect(config.strategy.profiles.intraday.positionScale).toBe(0.75);
+    expect(config.strategy.profiles.intraday.entryPaths.order).toEqual(['breakout', 'emaMomentum']);
+  });
+
   it('rejects empty symbols', () => {
     const parsed = parse(readFileSync(defaultConfigPath, 'utf8')) as Record<string, unknown>;
     parsed.symbols = [];
