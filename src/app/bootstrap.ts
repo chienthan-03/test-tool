@@ -34,7 +34,10 @@ import type { RuntimeContext } from './runtime-context.js';
 import { registerShutdown } from './shutdown.js';
 
 const pendingPlans = new Map<string, OrderPlan>();
-const intentMeta = new Map<string, { newsId: string; newsSignalId: string }>();
+const intentMeta = new Map<
+  string,
+  { newsId: string; newsSignalId: string; entryPath?: string }
+>();
 
 type TradingMode = 'sim' | 'testnet' | 'live';
 
@@ -49,6 +52,7 @@ const wireExecution = (
     intentMeta.set(intent.id, {
       newsId: intent.newsId,
       newsSignalId: intent.newsSignalId,
+      entryPath: intent.entryPath,
     });
   });
 
@@ -131,6 +135,7 @@ const persistOpenTrade = (
     takeProfit: plan.takeProfit,
     newsId: meta?.newsId,
     newsSignalId: meta?.newsSignalId,
+    entryPath: meta?.entryPath,
     openedAt: fill.timestamp,
   });
   log.info({ tradeId: plan.intentId, symbol: fill.symbol }, 'trade_opened');

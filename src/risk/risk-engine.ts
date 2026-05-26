@@ -52,9 +52,15 @@ export class RiskEngine {
             tpMult: this.config.risk.tpAtrMultiplier,
           });
 
+    let positionPercent = this.resolvePositionPercent(intent.symbol);
+    const alt = this.config.strategy.alternateEntries;
+    if (intent.entryPath !== 'fib' && alt.enabled) {
+      positionPercent *= alt.positionScale;
+    }
+
     const sized = calcQuantity({
       availableBalance: balance.available,
-      positionPercent: this.resolvePositionPercent(intent.symbol),
+      positionPercent,
       entryPrice: intent.entryPrice,
       minNotional: this.config.risk.minNotionalUsdt,
       maxNotional: this.config.risk.maxNotionalUsdt,

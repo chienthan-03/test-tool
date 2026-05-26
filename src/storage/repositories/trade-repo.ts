@@ -12,6 +12,7 @@ export interface OpenTradeParams {
   takeProfit: number;
   newsId?: string;
   newsSignalId?: string;
+  entryPath?: string;
   openedAt?: Date;
 }
 
@@ -33,8 +34,8 @@ export class TradeRepository {
       .prepare(
         `INSERT INTO trades (
           id, mode, symbol, side, quantity, entry_price, stop_loss, take_profit,
-          news_id, news_signal_id, status, opened_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)`,
+          news_id, news_signal_id, entry_path, status, opened_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)`,
       )
       .run(
         params.id,
@@ -47,6 +48,7 @@ export class TradeRepository {
         params.takeProfit,
         params.newsId ?? null,
         params.newsSignalId ?? null,
+        params.entryPath ?? null,
         openedAt,
       );
   }

@@ -3,7 +3,12 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const TARGET_VERSION = 1;
+const TARGET_VERSION = 2;
+
+const MIGRATION_FILES: Record<number, string> = {
+  1: '001_initial.sql',
+  2: '002_entry_path.sql',
+};
 
 const migrationsDir = dirname(fileURLToPath(import.meta.url));
 
@@ -30,12 +35,19 @@ export const migrate = (db: Database.Database): void => {
     return;
   }
 
-  const sqlPath = join(migrationsDir, 'migrations', '001_initial.sql');
-  const sql = readFileSync(sqlPath, 'utf8');
-  db.exec(sql);
+  for (let version = currentVersion + 1; version <= TARGET_VERSION; version++) {
+    const fileName = MIGRATION_FILES[version];
+    if (!fileName) {
+      throw new Error(`No migration file for version ${version}`);
+    }
 
-  db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(
-    TARGET_VERSION,
-    new Date().toISOString(),
-  );
+    const sqlPath = join(migrationsDir, 'migrations', fileName);
+    const sql = readFileSync(sqlPath, 'utf8');
+    db.exec(sql);
+
+    db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(
+      version,
+      new Date().toISOString(),
+    );
+  }
 };
