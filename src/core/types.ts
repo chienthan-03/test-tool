@@ -135,7 +135,16 @@ export interface BacktestTradeRecord {
   exitReason?: ExitReason;
   stopLoss?: number;
   takeProfit?: number;
+  entryPath?: EntryPathId;
 }
+
+export type EntryPathMetrics = {
+  totalTrades: number;
+  wins: number;
+  losses: number;
+  winRate: number;
+  totalPnlUsdt: number;
+};
 
 export interface BacktestReport {
   from: string;
@@ -150,6 +159,7 @@ export interface BacktestReport {
   sharpe?: number;
   trades: BacktestTradeRecord[];
   gateRejects?: GateRejectRecord[];
+  byEntryPath?: Record<string, EntryPathMetrics>;
 }
 
 /** Binance LOT_SIZE / PRICE_FILTER / MIN_NOTIONAL for a symbol. */

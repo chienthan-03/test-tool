@@ -63,6 +63,7 @@ const main = async (): Promise<void> => {
     exit_reason: t.exitReason ?? '',
     pnl_usdt: t.pnl,
     news_id: t.newsId,
+    entry_path: t.entryPath ?? 'fib',
     opened_at: report.from,
     closed_at: report.to,
   }));

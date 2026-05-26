@@ -18,6 +18,7 @@ export const TRADE_REVIEW_HEADERS = [
   'fees_usdt',
   'news_id',
   'news_signal_id',
+  'entry_path',
   'opened_at',
   'closed_at',
   'setup_quality',

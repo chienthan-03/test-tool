@@ -4,6 +4,8 @@
  * Usage:
  *   npm run export-trade-review -- --source backtest --report path/report.json --out review.csv
  *   npm run export-trade-review -- --source sqlite --out review.csv [--limit 50]
+ *
+ * CSV includes entry_path (fib | breakout | emaMomentum) from report trades or SQLite.
  */
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';

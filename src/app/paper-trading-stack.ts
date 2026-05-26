@@ -2,6 +2,7 @@ import type { AppConfig } from '../config/schema.js';
 import { AppEventBus } from '../core/event-bus.js';
 import type {
   BacktestTradeRecord,
+  EntryPathId,
   Fill,
   GateRejectRecord,
   OrderPlan,
@@ -31,10 +32,17 @@ export type SimPaperExecutionState = {
   gateRejects: GateRejectRecord[];
   equityCurve: number[];
   pendingPlans: Map<string, OrderPlan>;
-  intentMeta: Map<string, { newsId: string }>;
+  intentMeta: Map<string, { newsId: string; entryPath: EntryPathId }>;
   openTradeMeta: Map<
     string,
-    { newsId: string; side: OrderSide; entry: number; stopLoss: number; takeProfit: number }
+    {
+      newsId: string;
+      entryPath: EntryPathId;
+      side: OrderSide;
+      entry: number;
+      stopLoss: number;
+      takeProfit: number;
+    }
   >;
 };
 
@@ -105,7 +113,10 @@ export const wireSimPaperExecution = (
   state: SimPaperExecutionState,
 ): void => {
   bus.on('strategy:intent', (intent: TradeIntent) => {
-    state.intentMeta.set(intent.id, { newsId: intent.newsId });
+    state.intentMeta.set(intent.id, {
+      newsId: intent.newsId,
+      entryPath: intent.entryPath,
+    });
   });
 
   bus.on('risk:orderPlan', (plan) => {
@@ -117,6 +128,7 @@ export const wireSimPaperExecution = (
     const meta = plan ? state.intentMeta.get(plan.intentId) : undefined;
     state.openTradeMeta.set(fill.symbol, {
       newsId: meta?.newsId ?? 'unknown',
+      entryPath: meta?.entryPath ?? 'fib',
       side: fill.side,
       entry: fill.price,
       stopLoss: plan?.stopLoss ?? 0,
@@ -137,6 +149,7 @@ export const wireSimPaperExecution = (
         exitReason: event.exitReason,
         stopLoss: meta.stopLoss,
         takeProfit: meta.takeProfit,
+        entryPath: meta.entryPath,
       });
       state.openTradeMeta.delete(event.symbol);
     }

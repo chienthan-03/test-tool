@@ -3,7 +3,13 @@ import { join } from 'node:path';
 import type Database from 'better-sqlite3';
 import type { AppConfig } from '../config/schema.js';
 import { AppEventBus } from '../core/event-bus.js';
-import type { BacktestReport, Candle, NewsSignal } from '../core/types.js';
+import type {
+  BacktestReport,
+  BacktestTradeRecord,
+  Candle,
+  EntryPathMetrics,
+  NewsSignal,
+} from '../core/types.js';
 import {
   createPaperTradingStack,
   createSimPaperExecutionState,
@@ -76,6 +82,34 @@ const signalsInBar = (
       signal.createdAt.getTime() >= candle.openTime.getTime() &&
       signal.createdAt.getTime() <= candle.closeTime.getTime(),
   );
+
+const aggregateByEntryPath = (
+  trades: BacktestTradeRecord[],
+): Record<string, EntryPathMetrics> => {
+  const groups = new Map<string, BacktestTradeRecord[]>();
+
+  for (const trade of trades) {
+    const key = trade.entryPath ?? 'fib';
+    const bucket = groups.get(key) ?? [];
+    bucket.push(trade);
+    groups.set(key, bucket);
+  }
+
+  const result: Record<string, EntryPathMetrics> = {};
+  for (const [path, pathTrades] of groups) {
+    const wins = pathTrades.filter((t) => t.pnl > 0).length;
+    const losses = pathTrades.length - wins;
+    result[path] = {
+      totalTrades: pathTrades.length,
+      wins,
+      losses,
+      winRate: pathTrades.length > 0 ? wins / pathTrades.length : 0,
+      totalPnlUsdt: pathTrades.reduce((sum, t) => sum + t.pnl, 0),
+    };
+  }
+
+  return result;
+};
 
 const computeMaxDrawdownPct = (equityCurve: number[]): number => {
   if (equityCurve.length === 0) {
@@ -262,6 +296,9 @@ export class BacktestReplayer {
       equityCurve.push(finalBalance.total);
     }
 
+    const byEntryPath =
+      trades.length > 0 ? aggregateByEntryPath(trades) : undefined;
+
     const report: BacktestReport = {
       from: from.toISOString(),
       to: to.toISOString(),
@@ -274,6 +311,7 @@ export class BacktestReplayer {
       maxDrawdownPct: computeMaxDrawdownPct(equityCurve),
       trades,
       gateRejects: gateRejects.length > 0 ? gateRejects : undefined,
+      byEntryPath,
     };
 
     await mkdir(config.backtest.reportDir, { recursive: true });

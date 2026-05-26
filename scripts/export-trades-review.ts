@@ -39,18 +39,25 @@ type TradeRow = {
   fees_usdt: number | null;
   news_id: string | null;
   news_signal_id: string | null;
+  entry_path?: string | null;
   opened_at: string;
   closed_at: string | null;
+};
+
+const tradesHasEntryPath = (database: ReturnType<typeof openDatabase>): boolean => {
+  const columns = database.prepare('PRAGMA table_info(trades)').all() as { name: string }[];
+  return columns.some((col) => col.name === 'entry_path');
 };
 
 const { out, limit, configPath } = parseArgs();
 const config = loadConfigWithEnv(configPath);
 const db = openDatabase(config.storage.sqlitePath);
 
+const entryPathCol = tradesHasEntryPath(db) ? ', entry_path' : '';
 const rows = db
   .prepare(
     `SELECT id, mode, symbol, side, quantity, entry_price, exit_price, stop_loss, take_profit,
-            pnl_usdt, fees_usdt, news_id, news_signal_id, opened_at, closed_at
+            pnl_usdt, fees_usdt, news_id, news_signal_id${entryPathCol}, opened_at, closed_at
      FROM trades
      WHERE status = 'closed'
      ORDER BY closed_at DESC
@@ -74,6 +81,7 @@ const csvRows: TradeReviewRow[] = rows.map((row) => ({
   fees_usdt: row.fees_usdt ?? '',
   news_id: row.news_id ?? '',
   news_signal_id: row.news_signal_id ?? '',
+  entry_path: row.entry_path ?? 'fib',
   opened_at: row.opened_at,
   closed_at: row.closed_at ?? '',
 }));
