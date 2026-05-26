@@ -23,6 +23,13 @@ describe('config-loader', () => {
     expect(config.binance.margin.leverage).toBe(5);
   });
 
+  it('loads strategy.alternateEntries defaults', () => {
+    const config = loadConfig(defaultConfigPath);
+    expect(config.strategy.alternateEntries.enabled).toBe(false);
+    expect(config.strategy.alternateEntries.order).toEqual(['breakout', 'emaMomentum']);
+    expect(config.strategy.alternateEntries.positionScale).toBe(1);
+  });
+
   it('rejects empty symbols', () => {
     const parsed = parse(readFileSync(defaultConfigPath, 'utf8')) as Record<string, unknown>;
     parsed.symbols = [];

@@ -103,6 +103,25 @@ strategy:
     targetExtension: 1.618
     stopBelowSwing: true
     stopBufferPercent: 0.002
+  alternateEntries:
+    enabled: false
+    order:
+      - breakout
+      - emaMomentum
+    fallbackOnReasons:
+      - outside_fib_zone
+      - no_matching_impulse_leg
+      - risk_reward_too_low
+    positionScale: 1
+    breakout:
+      enabled: true
+      lookbackBars: 20
+      bufferPercent: 0.001
+    emaMomentum:
+      enabled: true
+      fastPeriod: 9
+      slowPeriod: 21
+      slopeLookback: 3
 
 # Risk (Phase 7): cooldown off on baseline matrix; tune via risk.cooldownAfterLoss experiments.
 risk:

@@ -30,6 +30,37 @@ export const TagRuleSchema = z.object({
   sentiment: z.union([z.literal(-1), z.literal(0), z.literal(1)]).optional(),
 });
 
+export const AlternateEntryPathIdSchema = z.enum(['breakout', 'emaMomentum']);
+
+export const BreakoutEntryConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  lookbackBars: z.number().int().min(5).max(200).default(20),
+  bufferPercent: z.number().min(0).max(0.05).default(0.001),
+});
+
+export const EmaMomentumEntryConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  fastPeriod: z.number().int().min(2).max(50).default(9),
+  slowPeriod: z.number().int().min(3).max(200).default(21),
+  slopeLookback: z.number().int().min(1).max(20).default(3),
+});
+
+export const AlternateEntriesConfigSchema = z.object({
+  enabled: z.boolean().default(false),
+  order: z.array(AlternateEntryPathIdSchema).default(['breakout', 'emaMomentum']),
+  fallbackOnReasons: z
+    .array(z.string().min(1))
+    .default(['outside_fib_zone', 'no_matching_impulse_leg', 'risk_reward_too_low']),
+  positionScale: z.number().min(0.1).max(1).default(1),
+  breakout: BreakoutEntryConfigSchema.default({ enabled: true, lookbackBars: 20, bufferPercent: 0.001 }),
+  emaMomentum: EmaMomentumEntryConfigSchema.default({
+    enabled: true,
+    fastPeriod: 9,
+    slowPeriod: 21,
+    slopeLookback: 3,
+  }),
+});
+
 export const AppConfigSchema = z.object({
   mode: z.enum(['live', 'testnet', 'sim']).default('sim'),
   allowLive: z.boolean().default(false),
@@ -95,6 +126,14 @@ export const AppConfigSchema = z.object({
       targetExtension: z.number().min(1).max(3),
       stopBelowSwing: z.boolean().default(true),
       stopBufferPercent: z.number().min(0).max(0.05).default(0.002),
+    }),
+    alternateEntries: AlternateEntriesConfigSchema.default({
+      enabled: false,
+      order: ['breakout', 'emaMomentum'],
+      fallbackOnReasons: ['outside_fib_zone', 'no_matching_impulse_leg', 'risk_reward_too_low'],
+      positionScale: 1,
+      breakout: { enabled: true, lookbackBars: 20, bufferPercent: 0.001 },
+      emaMomentum: { enabled: true, fastPeriod: 9, slowPeriod: 21, slopeLookback: 3 },
     }),
   }),
   risk: z.object({

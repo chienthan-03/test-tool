@@ -15,8 +15,8 @@ symbols:
 symbolOverrides: {}
 
 timeframes:
-  context: 1d
-  entry: 4h
+  context: 15m
+  entry: 5m
 
 feeds:
   - id: coindesk
@@ -102,6 +102,26 @@ strategy:
     targetExtension: 1.618
     stopBelowSwing: true
     stopBufferPercent: 0.002
+  # Extra entries when Fib zone misses (still xuoi trend via Elliott context gate).
+  alternateEntries:
+    enabled: false
+    order:
+      - breakout
+      - emaMomentum
+    fallbackOnReasons:
+      - outside_fib_zone
+      - no_matching_impulse_leg
+      - risk_reward_too_low
+    positionScale: 1
+    breakout:
+      enabled: true
+      lookbackBars: 20
+      bufferPercent: 0.001
+    emaMomentum:
+      enabled: true
+      fastPeriod: 9
+      slowPeriod: 21
+      slopeLookback: 3
 
 risk:
   positionPercent: 15
