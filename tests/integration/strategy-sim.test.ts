@@ -13,6 +13,8 @@ import type {
 } from '../../src/core/types.js';
 import { KlineStore } from '../../src/market/kline-store.js';
 import { RiskEngine } from '../../src/risk/risk-engine.js';
+import { EntryGate } from '../../src/strategy/entry-gate.js';
+import { buildEntryPathRegistry } from '../../src/strategy/entries/registry.js';
 import { MtfEngine } from '../../src/strategy/mtf-engine.js';
 import { PendingSignalStore } from '../../src/strategy/pending-signals.js';
 import { StrategyEngine } from '../../src/strategy/strategy-engine.js';
@@ -144,11 +146,13 @@ describe('strategy-sim integration', () => {
       plans.push(plan);
     });
 
+    const registry = buildEntryPathRegistry(config, mtf, store);
+    const entryGate = new EntryGate(config, mtf, registry, store, bus);
     new StrategyEngine(
       config,
       bus,
       store,
-      mtf,
+      entryGate,
       pending,
       async () => false,
       () => false,

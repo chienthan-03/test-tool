@@ -14,6 +14,8 @@ export type PositionSide = 'LONG' | 'SHORT';
 
 export type EntryType = 'MARKET';
 
+export type EntryPathId = 'fib' | 'breakout' | 'emaMomentum';
+
 export interface NewsItem {
   id: string;
   sourceId: string;
@@ -80,6 +82,7 @@ export interface TradeIntent {
   takeProfit?: number;
   contextTimeframe: string;
   entryTimeframe: string;
+  entryPath: EntryPathId;
   createdAt: Date;
 }
 

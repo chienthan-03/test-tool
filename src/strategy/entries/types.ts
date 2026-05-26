@@ -1,8 +1,8 @@
 import type { AppConfig } from '../../config/schema.js';
-import type { SignalDirection } from '../../core/types.js';
+import type { EntryPathId, SignalDirection } from '../../core/types.js';
 import type { KlineStore } from '../../market/kline-store.js';
 
-export type EntryPathId = 'fib' | 'breakout' | 'emaMomentum';
+export type { EntryPathId };
 
 export type EntryEvalContext = {
   symbol: string;

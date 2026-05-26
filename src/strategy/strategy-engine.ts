@@ -8,25 +8,21 @@ import type {
   TradeIntent,
 } from '../core/types.js';
 import type { KlineStore } from '../market/kline-store.js';
-import { EntryGate } from './entry-gate.js';
-import type { MtfEngine } from './mtf-engine.js';
+import type { EntryGate } from './entry-gate.js';
 import type { PendingSignalStore } from './pending-signals.js';
 
 export class StrategyEngine {
-  private readonly entryGate: EntryGate;
-
   constructor(
     private readonly config: AppConfig,
     private readonly bus: AppEventBus,
     private readonly _store: KlineStore,
-    private readonly mtf: MtfEngine,
+    private readonly entryGate: EntryGate,
     private readonly pending: PendingSignalStore,
     private readonly hasPosition: (symbol: string) => Promise<boolean>,
     private readonly isInCooldown: (symbol: string) => boolean = () => false,
     private readonly isPaused: () => boolean,
     private readonly getNow: () => Date = () => new Date(),
   ) {
-    this.entryGate = new EntryGate(config, mtf, bus, getNow);
     this.bus.on('news:signal', (signal) => {
       void this.handleNewsSignal(signal);
     });
@@ -115,6 +111,7 @@ export class StrategyEngine {
       takeProfit: entry.takeProfit,
       contextTimeframe: this.config.timeframes.context,
       entryTimeframe: this.config.timeframes.entry,
+      entryPath: gate.entryPath ?? 'fib',
       createdAt: this.getNow(),
     };
 

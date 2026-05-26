@@ -4,7 +4,8 @@ import { createLogger } from '../core/logger.js';
 import type { SignalDirection } from '../core/types.js';
 import type { KlineStore } from '../market/kline-store.js';
 import type { EntryPathRegistry } from './entries/registry.js';
-import type { EntryEvalContext, EntryPathId, EntryPathResult } from './entries/types.js';
+import type { EntryPathId } from '../core/types.js';
+import type { EntryEvalContext, EntryPathResult } from './entries/types.js';
 import type { MtfEngine } from './mtf-engine.js';
 
 export type EntryGateStage = 'context' | 'entry';

@@ -13,6 +13,8 @@ import type {
 } from '../../src/core/types.js';
 import { KlineStore } from '../../src/market/kline-store.js';
 import { RiskEngine } from '../../src/risk/risk-engine.js';
+import { EntryGate } from '../../src/strategy/entry-gate.js';
+import { buildEntryPathRegistry } from '../../src/strategy/entries/registry.js';
 import { MtfEngine } from '../../src/strategy/mtf-engine.js';
 import { PendingSignalStore } from '../../src/strategy/pending-signals.js';
 import { StrategyEngine } from '../../src/strategy/strategy-engine.js';
@@ -151,11 +153,13 @@ describe('entry-gates intent integration', () => {
       plans.push(plan);
     });
 
+    const registry = buildEntryPathRegistry(config, mtf, store);
+    const entryGate = new EntryGate(config, mtf, registry, store, bus);
     new StrategyEngine(
       config,
       bus,
       store,
-      mtf,
+      entryGate,
       pending,
       async () => false,
       () => false,
@@ -199,6 +203,7 @@ describe('entry-gates intent integration', () => {
     expect(intents.length + plans.length).toBeGreaterThan(0);
     if (intents.length > 0) {
       expect(intents[0]?.side).toBe('BUY');
+      expect(intents[0]?.entryPath).toBe('fib');
     }
     if (plans.length > 0) {
       expect(plans[0]?.side).toBe('BUY');
