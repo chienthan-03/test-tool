@@ -1,0 +1,9 @@
+# Alternate entry paths A/B matrix — Oct–Dec 2024 mock sentiment
+from: "2024-10-01"
+to: "2024-12-31"
+mockSentiment: true
+runs:
+  - id: alternate-off
+    config: config/experiments/alternate-entries-off.yaml
+  - id: alternate-on
+    config: config/experiments/alternate-entries-on.yaml
