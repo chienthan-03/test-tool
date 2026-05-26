@@ -7,8 +7,15 @@ import type { AppConfig } from '../../src/config/schema.js';
 import { KlineStore } from '../../src/market/kline-store.js';
 import { isInRetraceZone } from '../../src/market/fibonacci.js';
 import type { ImpulseLeg } from '../../src/market/swing-detector.js';
+import { buildEntryPathRegistry } from '../../src/strategy/entries/registry.js';
 import { EntryGate } from '../../src/strategy/entry-gate.js';
 import { MtfEngine } from '../../src/strategy/mtf-engine.js';
+
+const createEntryGate = (cfg: AppConfig, store: KlineStore): EntryGate => {
+  const mtf = new MtfEngine(cfg, store);
+  const registry = buildEntryPathRegistry(cfg, mtf, store);
+  return new EntryGate(cfg, mtf, registry, store);
+};
 
 const bullishRetraceLeg: ImpulseLeg = {
   start: { index: 0, price: 104, type: 'low', time: new Date() },
@@ -107,7 +114,7 @@ describe('EntryGate', () => {
     const store = new KlineStore();
     pushZigzagPivots(store, 'BTCUSDT', config.timeframes.context, bearishImpulsePivots(), 9);
 
-    const gate = new EntryGate(config, new MtfEngine(config, store));
+    const gate = createEntryGate(config, store);
     const result = gate.evaluate('BTCUSDT', 'long', 0.9);
 
     expect(result.allow).toBe(false);
@@ -134,10 +141,11 @@ describe('EntryGate', () => {
       makeCandle('BTCUSDT', tf, 999, retraceClose, retraceClose + 1.5, retraceClose - 1.5),
     );
 
-    const gate = new EntryGate(config, new MtfEngine(config, store));
+    const gate = createEntryGate(config, store);
     const result = gate.evaluate('BTCUSDT', 'long', 0.5);
 
     expect(result.allow).toBe(true);
+    expect(result.entryPath).toBe('fib');
     expect(result.entry?.confirm).toBe(true);
     expect(result.entry?.stopLoss).toBeDefined();
   });
@@ -177,10 +185,11 @@ describe('EntryGate', () => {
       ...config,
       entryGates: { enabled: false, logRejects: false },
     };
-    const gate = new EntryGate(bypassConfig, new MtfEngine(bypassConfig, store));
+    const gate = createEntryGate(bypassConfig, store);
     const result = gate.evaluate('BTCUSDT', 'long', 0.5);
 
     expect(result.allow).toBe(true);
+    expect(result.entryPath).toBe('fib');
     expect(result.stage).toBeUndefined();
   });
 });

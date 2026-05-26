@@ -2,7 +2,10 @@ import type { AppConfig } from '../config/schema.js';
 import type { AppEventBus } from '../core/event-bus.js';
 import { createLogger } from '../core/logger.js';
 import type { SignalDirection } from '../core/types.js';
-import type { MtfEngine, MtfEntryResult } from './mtf-engine.js';
+import type { KlineStore } from '../market/kline-store.js';
+import type { EntryPathRegistry } from './entries/registry.js';
+import type { EntryEvalContext, EntryPathId, EntryPathResult } from './entries/types.js';
+import type { MtfEngine } from './mtf-engine.js';
 
 export type EntryGateStage = 'context' | 'entry';
 
@@ -10,7 +13,8 @@ export type EntryGateResult = {
   allow: boolean;
   reason?: string;
   stage?: EntryGateStage;
-  entry?: MtfEntryResult;
+  entry?: EntryPathResult;
+  entryPath?: EntryPathId;
 };
 
 export class EntryGate {
@@ -19,6 +23,8 @@ export class EntryGate {
   constructor(
     private readonly config: AppConfig,
     private readonly mtf: MtfEngine,
+    private readonly registry: EntryPathRegistry,
+    private readonly store: KlineStore,
     private readonly bus?: AppEventBus,
     private readonly getNow: () => Date = () => new Date(),
   ) {
@@ -33,12 +39,20 @@ export class EntryGate {
     direction: SignalDirection,
     strength: number,
   ): EntryGateResult {
+    const ctx: EntryEvalContext = {
+      symbol,
+      direction,
+      strength,
+      config: this.config,
+      store: this.store,
+    };
+
     if (!this.config.entryGates.enabled) {
-      const entry = this.mtf.evaluateEntry(symbol, direction);
-      if (!entry.confirm) {
-        return { allow: false, reason: entry.reason, stage: 'entry' };
+      const r = this.registry.primary.evaluate(ctx);
+      if (!r.confirm) {
+        return { allow: false, reason: r.reason, stage: 'entry' };
       }
-      return { allow: true, entry };
+      return { allow: true, entry: r, entryPath: 'fib' };
     }
 
     const context = this.mtf.evaluateContext(symbol, direction, strength);
@@ -51,17 +65,29 @@ export class EntryGate {
       };
     }
 
-    const entry = this.mtf.evaluateEntry(symbol, direction);
-    if (!entry.confirm) {
-      this.logReject(symbol, direction, entry.reason ?? 'entry_blocked', 'entry');
+    const primary = this.registry.primary.evaluate(ctx);
+    if (primary.confirm) {
+      return { allow: true, entry: primary, entryPath: 'fib' };
+    }
+
+    const altCfg = this.config.strategy.alternateEntries;
+    if (!altCfg.enabled || !altCfg.fallbackOnReasons.includes(primary.reason ?? '')) {
+      this.logReject(symbol, direction, primary.reason ?? 'entry_blocked', 'entry');
       return {
         allow: false,
-        reason: entry.reason,
+        reason: primary.reason,
         stage: 'entry',
       };
     }
 
-    return { allow: true, entry };
+    for (const evaluator of this.registry.alternates) {
+      const alt = evaluator.evaluate(ctx);
+      if (alt.confirm) {
+        return { allow: true, entry: alt, entryPath: evaluator.id };
+      }
+    }
+
+    return { allow: false, reason: primary.reason, stage: 'entry' };
   }
 
   private logReject(
