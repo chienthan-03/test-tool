@@ -129,7 +129,7 @@ cp .env.example .env
 npm run dev -- validate --config config/production.yaml
 ```
 
-Nếu báo lỗi schema/YAML → sửa config trước khi `start`.
+Nếu báo lỗi schema/YAML → sửa config trước khi `start`. Cảnh báo `[validate]` về lệch `entryProfile` / timeframe (mục 7.7) là gợi ý — không phải lỗi chặn.
 
 **File khuyến nghị vận hành:** `config/production.yaml`  
 - Cùng preset nghiên cứu Phases 3–7 (sentiment rule-only, fib 0.02, 5 coin, EntryGate bật).  
@@ -256,6 +256,84 @@ Poll 90–120 giây → tín hiệu có thể **trễ** so với giá. Đây là
 
 Chi tiết kỹ thuật: [spec alternate entry paths](./superpowers/specs/2026-05-25-alternate-entry-paths-design.md).
 
+### 7.7 Hồ sơ vào lệnh (`entryProfile`: swing vs intraday)
+
+Một file YAML (vd. `config/production.yaml`) có thể chuyển **toàn bộ** luồng chiến lược bằng `strategy.entryProfile` — không cần sửa code, không cần file preset riêng.
+
+| Giá trị | Khung thời gian khuyến nghị | Bối cảnh (context) | Chuỗi vào lệnh |
+|--------|-----------------------------|--------------------|----------------|
+| **`swing`** (mặc định) | **1d** / **4h** | Elliott (`MtfEngine`) | **Fib** trước → (tuỳ chọn) fallback `breakout` / `emaMomentum` qua `alternateEntries` |
+| **`intraday`** | **1h** / **15m** | EMA 20/50 trên TF context | **breakout** → **emaMomentum** (lần lượt); **không** gọi Fib/Elliott |
+
+**Lưu ý quan trọng:**
+
+- Bot **không** tự đổi `timeframes` khi đổi `entryProfile` — bạn phải sửa `timeframes.context` và `timeframes.entry` cho khớp profile.
+- `strategy.alternateEntries.enabled` chỉ áp dụng **fallback Fib trên swing**. Với `intraday`, chuỗi lấy từ `profiles.intraday.entryPaths.order`; bật/tắt từng path qua `alternateEntries.breakout` / `emaMomentum` (`enabled: true/false`).
+- Tham số lookback/EMA của breakout và emaMomentum dùng chung block `strategy.alternateEntries.*`.
+
+**Giảm size theo profile (`positionScale`):**
+
+| Profile | Cách áp dụng |
+|---------|----------------|
+| **intraday** | Mọi lệnh intraday nhân `strategy.profiles.intraday.positionScale` (mặc định **0.75** = 75% notional so với `risk.positionPercent` thuần) |
+| **swing** | Lệnh Fib giữ **100%**; lệnh alternate (khi `alternateEntries.enabled: true` và fallback kích hoạt) nhân `alternateEntries.positionScale` |
+
+Ví dụ: balance 10.000 USDT, `positionPercent: 15` → notional gốc 1.500 USDT; intraday với `positionScale: 0.75` → ~1.125 USDT mỗi lệnh.
+
+**Cảnh báo khi `validate`:**
+
+Sau khi load config, lệnh `validate` in cảnh báo (không chặn chạy) nếu profile và timeframe lệch nhau:
+
+```text
+[validate] entryProfile intraday with swing timeframes (1d/4h); use 1h/15m recommended
+[validate] entryProfile swing with intraday entry TF; use 4h entry recommended
+```
+
+Cảnh báo đầu xuất hiện khi `entryProfile: intraday` nhưng vẫn để `1d`/`4h`. Cảnh báo sau khi `entryProfile: swing` nhưng `timeframes.entry` là `15m`, `5m`, `3m` hoặc `1m`.
+
+**Ví dụ chuyển sang intraday momentum** (chỉ sau backtest matrix / review — xem spec):
+
+```yaml
+timeframes:
+  context: 1h
+  entry: 15m
+
+strategy:
+  entryProfile: intraday
+  profiles:
+    intraday:
+      contextMode: emaTrend
+      contextEma:
+        fastPeriod: 20
+        slowPeriod: 50
+        flatPercent: 0.0005
+      entryPaths:
+        order: [breakout, emaMomentum]
+      positionScale: 0.75
+  alternateEntries:
+    breakout:
+      enabled: true
+    emaMomentum:
+      enabled: true
+```
+
+**Quay lại swing (production mặc định):**
+
+```yaml
+timeframes:
+  context: 1d
+  entry: 4h
+
+strategy:
+  entryProfile: swing
+  alternateEntries:
+    enabled: false
+```
+
+Preset thử nghiệm: `config/experiments/profile-swing-baseline.yaml`, `profile-intraday-momentum.yaml`, matrix `profile-matrix.yaml`.
+
+Chi tiết kỹ thuật: [spec entry profile momentum](./superpowers/specs/2026-05-27-entry-profile-momentum-design.md).
+
 ---
 
 ## 8. Checklist trước Live (tóm tắt tiếng Việt)
@@ -284,8 +362,9 @@ Chi tiết kỹ thuật: [spec alternate entry paths](./superpowers/specs/2026-0
 | Chỉ BTC/ETH | Thu `symbols` trong YAML |
 | Bật LLM sentiment | `sentiment.llm.enabled: true` + `OPENROUTER_API_KEY` — chỉ sau khi đã so sánh backtest |
 | Thử lối vào breakout / EMA | `strategy.alternateEntries.enabled: true` — chỉ sau backtest matrix; xem mục 7.6 |
+| Chuyển swing ↔ intraday | `strategy.entryProfile` + đổi `timeframes` tương ứng; xem mục 7.7 |
 
-Timeframe production: **context 1d**, **entry 4h** (`timeframes` trong config).
+Timeframe production (swing): **context 1d**, **entry 4h**. Intraday khuyến nghị **1h** / **15m**.
 
 ---
 
@@ -313,7 +392,8 @@ Timeframe production: **context 1d**, **entry 4h** (`timeframes` trong config).
 | `.planning/phases/09-mode-parity-validation/MODE-PARITY.md` | Khác biệt sim / backtest / testnet |
 | `.planning/phases/08-trade-review-workflow/REVIEW-PROCESS.md` | Quy trình review lệnh |
 | [superpowers/specs/2026-05-25-alternate-entry-paths-design.md](./superpowers/specs/2026-05-25-alternate-entry-paths-design.md) | Lối vào thay thế (Fib-first fallback) |
+| [superpowers/specs/2026-05-27-entry-profile-momentum-design.md](./superpowers/specs/2026-05-27-entry-profile-momentum-design.md) | Hồ sơ swing vs intraday (`entryProfile`) |
 
 ---
 
-*Cập nhật: 2026-05-27 — thêm mục 7.6 `alternateEntries`; Phase 10 rollout (`production.yaml`, `allowLive: false` mặc định).*
+*Cập nhật: 2026-05-27 — mục 7.7 `entryProfile` swing/intraday; 7.6 `alternateEntries`; Phase 10 rollout (`production.yaml`, `allowLive: false` mặc định).*

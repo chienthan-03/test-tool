@@ -81,6 +81,7 @@ Research cycle merged into production presets (rule-only sentiment, tighter Fib 
 | `.planning/phases/09-mode-parity-validation/MODE-PARITY.md` | Sim / backtest / testnet differences |
 
 - **Alternate entry paths:** Fib-first fallback with optional `breakout` / `emaMomentum` behind `strategy.alternateEntries` (default `enabled: false`); `entry_path` in trade-review CSV. See [spec](docs/superpowers/specs/2026-05-25-alternate-entry-paths-design.md) and [implementation plan](docs/superpowers/plans/2026-05-25-alternate-entry-paths.md).
+- **Entry profile (swing vs intraday):** switch `strategy.entryProfile` in one YAML — Elliott+Fib on `1d/4h` (default) or EMA-context momentum (`breakout` → `emaMomentum`) on `1h/15m` without Fib; `validate` warns on TF mismatch. See [spec](docs/superpowers/specs/2026-05-27-entry-profile-momentum-design.md) and operator notes in [HUONG-DAN-FUTURES.md](docs/HUONG-DAN-FUTURES.md) §7.7.
 
 **Mode progression:** sim → testnet (≥1 week + trade review) → live only after checklist + `allowLive: true`.
 
