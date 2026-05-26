@@ -80,6 +80,8 @@ Research cycle merged into production presets (rule-only sentiment, tighter Fib 
 | `.planning/phases/08-trade-review-workflow/` | Review checklist & process |
 | `.planning/phases/09-mode-parity-validation/MODE-PARITY.md` | Sim / backtest / testnet differences |
 
+- **Alternate entry paths:** Fib-first fallback with optional `breakout` / `emaMomentum` behind `strategy.alternateEntries` (default `enabled: false`); `entry_path` in trade-review CSV. See [spec](docs/superpowers/specs/2026-05-25-alternate-entry-paths-design.md) and [implementation plan](docs/superpowers/plans/2026-05-25-alternate-entry-paths.md).
+
 **Mode progression:** sim → testnet (≥1 week + trade review) → live only after checklist + `allowLive: true`.
 
 ```bash

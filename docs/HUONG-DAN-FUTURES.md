@@ -247,6 +247,15 @@ Poll 90–120 giây → tín hiệu có thể **trễ** so với giá. Đây là
 
 `entryGates.enabled: true` — lọc setup MTF yếu trước risk. Tắt gate = nhiều lệnh hơn, không chắc chất lượng hơn.
 
+### 7.6 Lối vào thay thế (`alternateEntries`)
+
+- **`strategy.alternateEntries.enabled`** mặc định **`false`** trong `config/production.yaml` — **giữ tắt** cho đến khi đã chạy backtest matrix (và tuỳ chọn review testnet ≥ 1 tuần).
+- Luồng **Fib trước (fib-first):** bot vẫn thử setup Fib/Elliott như cũ; chỉ khi bị từ chối với lý do nằm trong `fallbackOnReasons` mới thử các path khác theo `order` (hiện có `breakout`, `emaMomentum`).
+- Khi bật, có thể thu size alternate bằng `positionScale` (xem spec tiếng Anh).
+- Export đánh giá lệnh có cột **`entry_path`** (`fib`, `breakout`, `emaMomentum`, …) — dùng `npm run export-trade-review` như mục 5.
+
+Chi tiết kỹ thuật: [spec alternate entry paths](./superpowers/specs/2026-05-25-alternate-entry-paths-design.md).
+
 ---
 
 ## 8. Checklist trước Live (tóm tắt tiếng Việt)
@@ -274,6 +283,7 @@ Poll 90–120 giây → tín hiệu có thể **trễ** so với giá. Đây là
 | Tạm ngừng sau lỗ liên tiếp | `risk.cooldownAfterLoss.enabled: true` (thử nghiệm Phase 7) |
 | Chỉ BTC/ETH | Thu `symbols` trong YAML |
 | Bật LLM sentiment | `sentiment.llm.enabled: true` + `OPENROUTER_API_KEY` — chỉ sau khi đã so sánh backtest |
+| Thử lối vào breakout / EMA | `strategy.alternateEntries.enabled: true` — chỉ sau backtest matrix; xem mục 7.6 |
 
 Timeframe production: **context 1d**, **entry 4h** (`timeframes` trong config).
 
@@ -302,7 +312,8 @@ Timeframe production: **context 1d**, **entry 4h** (`timeframes` trong config).
 | `config/production.yaml` | Profile vận hành khuyến nghị |
 | `.planning/phases/09-mode-parity-validation/MODE-PARITY.md` | Khác biệt sim / backtest / testnet |
 | `.planning/phases/08-trade-review-workflow/REVIEW-PROCESS.md` | Quy trình review lệnh |
+| [superpowers/specs/2026-05-25-alternate-entry-paths-design.md](./superpowers/specs/2026-05-25-alternate-entry-paths-design.md) | Lối vào thay thế (Fib-first fallback) |
 
 ---
 
-*Cập nhật: 2026-05-25 — khớp Phase 10 rollout (`production.yaml`, `allowLive: false` mặc định).*
+*Cập nhật: 2026-05-27 — thêm mục 7.6 `alternateEntries`; Phase 10 rollout (`production.yaml`, `allowLive: false` mặc định).*
