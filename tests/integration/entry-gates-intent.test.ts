@@ -22,12 +22,22 @@ import { PendingSignalStore } from '../../src/strategy/pending-signals.js';
 import { StrategyEngine } from '../../src/strategy/strategy-engine.js';
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
-const phase6ConfigPath = join(projectRoot, 'config/experiments/phase6-production.yaml');
+const profileSwingConfigPath = join(
+  projectRoot,
+  'config/experiments/profile-swing-baseline.yaml',
+);
+const profileIntradayConfigPath = join(
+  projectRoot,
+  'config/experiments/profile-intraday-momentum.yaml',
+);
 
 const TF_MS: Record<string, number> = {
+  '15m': 900_000,
   '1h': 3_600_000,
   '4h': 14_400_000,
 };
+
+const INTRADAY_ENTRY_PATHS = ['breakout', 'emaMomentum'] as const;
 
 const makeCandle = (
   symbol: string,
@@ -86,6 +96,76 @@ const pushZigzagPivots = (
   }
 };
 
+const seedTrendCandles = (
+  store: KlineStore,
+  symbol: string,
+  tf: string,
+  count: number,
+  startClose: number,
+  step: number,
+  range: number,
+): void => {
+  const tfMs = TF_MS[tf] ?? 900_000;
+  for (let i = 0; i < count; i++) {
+    const close = startClose + i * step;
+    const openTime = new Date(Date.UTC(2026, 0, 1) + i * tfMs);
+    store.update(symbol, tf, {
+      symbol,
+      interval: tf,
+      openTime,
+      closeTime: new Date(openTime.getTime() + tfMs),
+      open: close,
+      high: close + range / 2,
+      low: close - range / 2,
+      close,
+      volume: 100,
+      isClosed: true,
+    });
+  }
+};
+
+const seedLongBreakoutCandles = (
+  store: KlineStore,
+  symbol: string,
+  tf: string,
+  barCount: number,
+  rangeHigh: number,
+  breakoutClose: number,
+): void => {
+  const tfMs = TF_MS[tf] ?? 900_000;
+  const rangeLow = rangeHigh - 20;
+  for (let i = 0; i < barCount - 1; i++) {
+    const close = rangeHigh;
+    const openTime = new Date(Date.UTC(2026, 0, 1) + i * tfMs);
+    store.update(symbol, tf, {
+      symbol,
+      interval: tf,
+      openTime,
+      closeTime: new Date(openTime.getTime() + tfMs),
+      open: close,
+      high: rangeHigh,
+      low: rangeLow,
+      close,
+      volume: 100,
+      isClosed: true,
+    });
+  }
+  const lastIndex = barCount - 1;
+  const openTime = new Date(Date.UTC(2026, 0, 1) + lastIndex * tfMs);
+  store.update(symbol, tf, {
+    symbol,
+    interval: tf,
+    openTime,
+    closeTime: new Date(openTime.getTime() + tfMs),
+    open: breakoutClose,
+    high: breakoutClose + 10,
+    low: breakoutClose - 5,
+    close: breakoutClose,
+    volume: 100,
+    isClosed: true,
+  });
+};
+
 const bullishImpulsePivots = (): Array<{ price: number; type: 'high' | 'low' }> => [
   { price: 100, type: 'low' },
   { price: 108, type: 'high' },
@@ -103,10 +183,12 @@ describe('entry-gates intent integration', () => {
   let config: AppConfig;
 
   beforeAll(() => {
-    config = loadConfig(phase6ConfigPath);
+    config = loadConfig(profileSwingConfigPath);
   });
 
-  it('phase6 config has merged research settings', () => {
+  it('profile-swing config has merged research settings', () => {
+    expect(config.strategy.entryProfile).toBe('swing');
+    expect(config.timeframes).toEqual({ context: '1d', entry: '4h' });
     expect(config.entryGates.enabled).toBe(true);
     expect(config.sentiment.llm.enabled).toBe(false);
     expect(config.strategy.fibonacci.zoneTolerancePercent).toBe(0.02);
@@ -191,8 +273,8 @@ describe('entry-gates intent integration', () => {
 
     const now = new Date();
     const signal: NewsSignal = {
-      id: 'phase6-signal-1',
-      newsId: 'phase6-news-1',
+      id: 'swing-signal-1',
+      newsId: 'swing-news-1',
       symbols: ['BTCUSDT'],
       direction: 'long',
       strength: 0.9,
@@ -219,6 +301,117 @@ describe('entry-gates intent integration', () => {
     }
     if (plans.length > 0) {
       expect(plans[0]?.side).toBe('BUY');
+    }
+  });
+
+  it('profile-intraday config emits intent with momentum entryPath', async () => {
+    const intradayConfig = loadConfig(profileIntradayConfigPath);
+    expect(intradayConfig.strategy.entryProfile).toBe('intraday');
+    expect(intradayConfig.entryGates.enabled).toBe(true);
+    expect(intradayConfig.timeframes).toEqual({ context: '1h', entry: '15m' });
+
+    const store = new KlineStore();
+    const bus = new AppEventBus();
+    const pending = new PendingSignalStore();
+    const mtf = new MtfEngine(intradayConfig, store);
+    const symbol = 'BTCUSDT';
+
+    seedTrendCandles(store, symbol, intradayConfig.timeframes.context, 60, 10_000, 50, 80);
+
+    const lookback = intradayConfig.strategy.alternateEntries.breakout.lookbackBars;
+    const buffer = intradayConfig.strategy.alternateEntries.breakout.bufferPercent;
+    const rangeHigh = 10_000;
+    const breakoutClose = rangeHigh * (1 + buffer) + 50;
+    seedLongBreakoutCandles(
+      store,
+      symbol,
+      intradayConfig.timeframes.entry,
+      lookback + 5,
+      rangeHigh,
+      breakoutClose,
+    );
+
+    const confirmingCandle = makeCandle(
+      symbol,
+      intradayConfig.timeframes.entry,
+      lookback + 10,
+      breakoutClose,
+      breakoutClose + 10,
+      breakoutClose - 5,
+      new Date(Date.now() + 900_000),
+    );
+    store.update(symbol, intradayConfig.timeframes.entry, confirmingCandle);
+
+    const intents: TradeIntent[] = [];
+    const plans: OrderPlan[] = [];
+    bus.on('strategy:intent', (intent) => {
+      intents.push(intent);
+    });
+    bus.on('risk:orderPlan', (plan) => {
+      plans.push(plan);
+    });
+
+    const registry = buildEntryPathRegistry(intradayConfig, mtf, store);
+    const intradayChain = buildIntradayEntryChain(intradayConfig);
+    const contextGate = buildContextGate(intradayConfig, mtf);
+    const entryGate = new EntryGate(
+      intradayConfig,
+      mtf,
+      registry,
+      intradayChain,
+      contextGate,
+      store,
+      bus,
+    );
+    new StrategyEngine(
+      intradayConfig,
+      bus,
+      store,
+      entryGate,
+      pending,
+      async () => false,
+      () => false,
+      () => false,
+    );
+
+    new RiskEngine(
+      intradayConfig,
+      bus,
+      async () => ({ available: 10_000, total: 10_000 }),
+      async () => ({
+        stepSize: 0.001,
+        minQty: 0.001,
+        tickSize: 0.1,
+      }),
+    );
+
+    const now = new Date();
+    const signal: NewsSignal = {
+      id: 'intraday-signal-1',
+      newsId: 'intraday-news-1',
+      symbols: [symbol],
+      direction: 'long',
+      strength: 0.9,
+      expiresAt: new Date(now.getTime() + 3_600_000),
+      source: 'rule',
+      createdAt: now,
+    };
+
+    bus.emit('news:signal', signal);
+    await flushAsyncHandlers();
+
+    bus.emit('market:candleClose', {
+      symbol,
+      tf: intradayConfig.timeframes.entry,
+      candle: confirmingCandle,
+    });
+    await flushAsyncHandlers();
+
+    expect(intents.length + plans.length).toBeGreaterThan(0);
+    if (intents.length > 0) {
+      expect(intents[0]?.side).toBe('BUY');
+      expect(INTRADAY_ENTRY_PATHS).toContain(intents[0]?.entryPath);
+      expect(intents[0]?.entryPath).not.toBe('fib');
     }
   });
 });

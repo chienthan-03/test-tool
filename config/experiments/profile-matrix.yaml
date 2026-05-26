@@ -1,0 +1,9 @@
+# Entry profile A/B matrix — swing (1d/4h fib) vs intraday momentum (1h/15m)
+from: "2024-10-01"
+to: "2024-12-31"
+mockSentiment: true
+runs:
+  - id: profile-swing
+    config: config/experiments/profile-swing-baseline.yaml
+  - id: profile-intraday
+    config: config/experiments/profile-intraday-momentum.yaml
