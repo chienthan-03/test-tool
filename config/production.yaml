@@ -15,8 +15,8 @@ symbols:
 symbolOverrides: {}
 
 timeframes:
-  context: 1d
-  entry: 4h
+  context: 1h
+  entry: 15m
 
 feeds:
   - id: coindesk
@@ -102,7 +102,7 @@ strategy:
     targetExtension: 1.618
     stopBelowSwing: true
     stopBufferPercent: 0.002
-  entryProfile: swing
+  entryProfile: intraday
   profiles:
     swing:
       contextMode: elliott
