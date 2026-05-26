@@ -8,15 +8,15 @@ allowLive: false
 symbols:
   - BTCUSDT
   - ETHUSDT
-  - SOLUSDT
-  - BNBUSDT
-  - XRPUSDT
+  # - SOLUSDT
+  # - BNBUSDT
+  # - XRPUSDT
 
 symbolOverrides: {}
 
 timeframes:
-  context: 1h
-  entry: 15m
+  context: 1d
+  entry: 4h
 
 feeds:
   - id: coindesk
@@ -108,16 +108,16 @@ strategy:
       contextMode: elliott
       entryPaths:
         primary: fib
-      useAlternateFallback: true
-    intraday:
-      contextMode: emaTrend
-      contextEma:
-        fastPeriod: 20
-        slowPeriod: 50
-        flatPercent: 0.0005
-      entryPaths:
-        order: [breakout, emaMomentum]
-      positionScale: 0.75
+      useAlternateFallback: false
+    # intraday:
+    #   contextMode: emaTrend
+    #   contextEma:
+    #     fastPeriod: 20
+    #     slowPeriod: 50
+    #     flatPercent: 0.0005
+    #   entryPaths:
+    #     order: [breakout, emaMomentum]
+    #   positionScale: 0.75
   alternateEntries:
     enabled: false
     order:
