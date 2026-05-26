@@ -80,7 +80,7 @@ describe('SignalMerger', () => {
   it('filters symbols to whitelist intersection', () => {
     const signal = merger.build(
       makeRule(),
-      makeNewsItem({ symbols: ['BTCUSDT', 'SOLUSDT'] }),
+      makeNewsItem({ symbols: ['BTCUSDT', 'DOGEUSDT'] }),
     );
 
     expect(signal?.symbols).toEqual(['BTCUSDT']);
