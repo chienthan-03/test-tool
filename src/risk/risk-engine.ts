@@ -2,6 +2,7 @@ import type { AppConfig } from '../config/schema.js';
 import type { AppEventBus } from '../core/event-bus.js';
 import { createLogger } from '../core/logger.js';
 import type { Balance, OrderPlan, TradeIntent } from '../core/types.js';
+import { resolvePositionScaleMultiplier } from './position-scale.js';
 import { calcQuantity } from './position-sizer.js';
 import { calcSlTp } from './sl-tp-calculator.js';
 
@@ -53,10 +54,7 @@ export class RiskEngine {
           });
 
     let positionPercent = this.resolvePositionPercent(intent.symbol);
-    const alt = this.config.strategy.alternateEntries;
-    if (intent.entryPath !== 'fib' && alt.enabled) {
-      positionPercent *= alt.positionScale;
-    }
+    positionPercent *= resolvePositionScaleMultiplier(this.config, intent.entryPath);
 
     const sized = calcQuantity({
       availableBalance: balance.available,
