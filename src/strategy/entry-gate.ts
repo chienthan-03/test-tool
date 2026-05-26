@@ -3,9 +3,10 @@ import type { AppEventBus } from '../core/event-bus.js';
 import { createLogger } from '../core/logger.js';
 import type { SignalDirection } from '../core/types.js';
 import type { KlineStore } from '../market/kline-store.js';
+import type { ContextGate } from './context/types.js';
 import type { EntryPathRegistry } from './entries/registry.js';
 import type { EntryPathId } from '../core/types.js';
-import type { EntryEvalContext, EntryPathResult } from './entries/types.js';
+import type { EntryEvalContext, EntryPathEvaluator, EntryPathResult } from './entries/types.js';
 import type { MtfEngine } from './mtf-engine.js';
 
 export type EntryGateStage = 'context' | 'entry';
@@ -25,6 +26,8 @@ export class EntryGate {
     private readonly config: AppConfig,
     private readonly mtf: MtfEngine,
     private readonly registry: EntryPathRegistry,
+    private readonly intradayChain: EntryPathEvaluator[],
+    private readonly contextGate: ContextGate,
     private readonly store: KlineStore,
     private readonly bus?: AppEventBus,
     private readonly getNow: () => Date = () => new Date(),
@@ -48,6 +51,18 @@ export class EntryGate {
       store: this.store,
     };
 
+    if (this.config.strategy.entryProfile === 'intraday') {
+      return this.evaluateIntraday(ctx, symbol, direction, strength);
+    }
+    return this.evaluateSwing(ctx, symbol, direction, strength);
+  }
+
+  private evaluateSwing(
+    ctx: EntryEvalContext,
+    symbol: string,
+    direction: SignalDirection,
+    strength: number,
+  ): EntryGateResult {
     if (!this.config.entryGates.enabled) {
       const r = this.registry.primary.evaluate(ctx);
       if (!r.confirm) {
@@ -56,7 +71,7 @@ export class EntryGate {
       return { allow: true, entry: r, entryPath: 'fib' };
     }
 
-    const context = this.mtf.evaluateContext(symbol, direction, strength);
+    const context = this.contextGate.evaluate(symbol, direction, strength, ctx);
     if (!context.allow) {
       this.logReject(symbol, direction, context.reason ?? 'context_blocked', 'context');
       return {
@@ -89,6 +104,34 @@ export class EntryGate {
     }
 
     return { allow: false, reason: primary.reason, stage: 'entry' };
+  }
+
+  private evaluateIntraday(
+    ctx: EntryEvalContext,
+    symbol: string,
+    direction: SignalDirection,
+    strength: number,
+  ): EntryGateResult {
+    if (this.config.entryGates.enabled) {
+      const context = this.contextGate.evaluate(symbol, direction, strength, ctx);
+      if (!context.allow) {
+        this.logReject(symbol, direction, context.reason ?? 'context_blocked', 'context');
+        return {
+          allow: false,
+          reason: context.reason,
+          stage: 'context',
+        };
+      }
+    }
+
+    for (const evaluator of this.intradayChain) {
+      const r = evaluator.evaluate(ctx);
+      if (r.confirm) {
+        return { allow: true, entry: r, entryPath: evaluator.id };
+      }
+    }
+
+    return { allow: false, stage: 'entry', reason: 'intraday_no_entry_path' };
   }
 
   private logReject(

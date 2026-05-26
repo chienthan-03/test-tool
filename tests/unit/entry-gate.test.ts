@@ -7,6 +7,8 @@ import type { AppConfig } from '../../src/config/schema.js';
 import { KlineStore } from '../../src/market/kline-store.js';
 import { isInRetraceZone } from '../../src/market/fibonacci.js';
 import type { ImpulseLeg } from '../../src/market/swing-detector.js';
+import { buildContextGate } from '../../src/strategy/context/build-context-gate.js';
+import { buildIntradayEntryChain } from '../../src/strategy/entries/intraday-chain.js';
 import { buildEntryPathRegistry } from '../../src/strategy/entries/registry.js';
 import { EntryGate } from '../../src/strategy/entry-gate.js';
 import { MtfEngine } from '../../src/strategy/mtf-engine.js';
@@ -14,7 +16,9 @@ import { MtfEngine } from '../../src/strategy/mtf-engine.js';
 const createEntryGate = (cfg: AppConfig, store: KlineStore): EntryGate => {
   const mtf = new MtfEngine(cfg, store);
   const registry = buildEntryPathRegistry(cfg, mtf, store);
-  return new EntryGate(cfg, mtf, registry, store);
+  const intradayChain = buildIntradayEntryChain(cfg);
+  const contextGate = buildContextGate(cfg, mtf);
+  return new EntryGate(cfg, mtf, registry, intradayChain, contextGate, store);
 };
 
 const bullishRetraceLeg: ImpulseLeg = {

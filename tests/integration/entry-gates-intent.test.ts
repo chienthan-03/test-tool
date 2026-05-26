@@ -13,7 +13,9 @@ import type {
 } from '../../src/core/types.js';
 import { KlineStore } from '../../src/market/kline-store.js';
 import { RiskEngine } from '../../src/risk/risk-engine.js';
+import { buildContextGate } from '../../src/strategy/context/build-context-gate.js';
 import { EntryGate } from '../../src/strategy/entry-gate.js';
+import { buildIntradayEntryChain } from '../../src/strategy/entries/intraday-chain.js';
 import { buildEntryPathRegistry } from '../../src/strategy/entries/registry.js';
 import { MtfEngine } from '../../src/strategy/mtf-engine.js';
 import { PendingSignalStore } from '../../src/strategy/pending-signals.js';
@@ -154,7 +156,17 @@ describe('entry-gates intent integration', () => {
     });
 
     const registry = buildEntryPathRegistry(config, mtf, store);
-    const entryGate = new EntryGate(config, mtf, registry, store, bus);
+    const intradayChain = buildIntradayEntryChain(config);
+    const contextGate = buildContextGate(config, mtf);
+    const entryGate = new EntryGate(
+      config,
+      mtf,
+      registry,
+      intradayChain,
+      contextGate,
+      store,
+      bus,
+    );
     new StrategyEngine(
       config,
       bus,

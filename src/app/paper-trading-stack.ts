@@ -12,7 +12,9 @@ import type {
 import type { SimBroker } from '../execution/sim-broker.js';
 import { KlineStore } from '../market/kline-store.js';
 import { RiskEngine, type SymbolFilters } from '../risk/risk-engine.js';
+import { buildContextGate } from '../strategy/context/build-context-gate.js';
 import { EntryGate } from '../strategy/entry-gate.js';
+import { buildIntradayEntryChain } from '../strategy/entries/intraday-chain.js';
 import { buildEntryPathRegistry } from '../strategy/entries/registry.js';
 import { MtfEngine } from '../strategy/mtf-engine.js';
 import { PendingSignalStore } from '../strategy/pending-signals.js';
@@ -70,10 +72,14 @@ export const createPaperTradingStack = (params: {
   const pending = new PendingSignalStore();
   const mtf = new MtfEngine(params.config, params.store);
   const registry = buildEntryPathRegistry(params.config, mtf, params.store);
+  const intradayChain = buildIntradayEntryChain(params.config);
+  const contextGate = buildContextGate(params.config, mtf);
   const entryGate = new EntryGate(
     params.config,
     mtf,
     registry,
+    intradayChain,
+    contextGate,
     params.store,
     params.bus,
     params.getNow,

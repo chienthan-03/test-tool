@@ -17,7 +17,9 @@ import { NewsPipeline } from '../sentiment/news-pipeline.js';
 import { RuleScorer } from '../sentiment/rule-scorer.js';
 import { SignalMerger } from '../sentiment/signal-merger.js';
 import { RiskEngine } from '../risk/risk-engine.js';
+import { buildContextGate } from '../strategy/context/build-context-gate.js';
 import { EntryGate } from '../strategy/entry-gate.js';
+import { buildIntradayEntryChain } from '../strategy/entries/intraday-chain.js';
 import { buildEntryPathRegistry } from '../strategy/entries/registry.js';
 import { MtfEngine } from '../strategy/mtf-engine.js';
 import { PendingSignalStore } from '../strategy/pending-signals.js';
@@ -218,7 +220,17 @@ const wireTradingStack = async (
 
   const mtf = new MtfEngine(config, store);
   const registry = buildEntryPathRegistry(config, mtf, store);
-  const entryGate = new EntryGate(config, mtf, registry, store, bus);
+  const intradayChain = buildIntradayEntryChain(config);
+  const contextGate = buildContextGate(config, mtf);
+  const entryGate = new EntryGate(
+    config,
+    mtf,
+    registry,
+    intradayChain,
+    contextGate,
+    store,
+    bus,
+  );
   const pending = new PendingSignalStore();
   const cooldown = new SymbolCooldownTracker(config);
   cooldown.wire(bus);

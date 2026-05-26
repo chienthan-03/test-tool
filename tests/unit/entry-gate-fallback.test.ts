@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { loadConfig } from '../../src/config/loader.js';
 import type { AppConfig } from '../../src/config/schema.js';
 import { KlineStore } from '../../src/market/kline-store.js';
+import { ElliottContextGate } from '../../src/strategy/context/elliott-context-gate.js';
 import { EntryGate } from '../../src/strategy/entry-gate.js';
 import type { EntryPathEvaluator } from '../../src/strategy/entries/types.js';
 import type { EntryPathRegistry } from '../../src/strategy/entries/registry.js';
@@ -64,7 +65,14 @@ describe('EntryGate fallback chain', () => {
       },
     };
 
-    const gate = new EntryGate(config, mtf, registry, store);
+    const gate = new EntryGate(
+      config,
+      mtf,
+      registry,
+      [],
+      new ElliottContextGate(mtf),
+      store,
+    );
     const result = gate.evaluate('BTCUSDT', 'long', 0.5);
 
     expect(result.allow).toBe(true);
@@ -102,7 +110,14 @@ describe('EntryGate fallback chain', () => {
       },
     };
 
-    const gate = new EntryGate(config, mtf, registry, store);
+    const gate = new EntryGate(
+      config,
+      mtf,
+      registry,
+      [],
+      new ElliottContextGate(mtf),
+      store,
+    );
     const result = gate.evaluate('BTCUSDT', 'long', 0.9);
 
     expect(result.allow).toBe(false);
@@ -144,7 +159,14 @@ describe('EntryGate fallback chain', () => {
       },
     };
 
-    const gate = new EntryGate(config, mtf, registry, store);
+    const gate = new EntryGate(
+      config,
+      mtf,
+      registry,
+      [],
+      new ElliottContextGate(mtf),
+      store,
+    );
     const result = gate.evaluate('BTCUSDT', 'long', 0.5);
 
     expect(result.allow).toBe(false);
