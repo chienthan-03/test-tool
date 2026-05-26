@@ -6,7 +6,7 @@ English summary: automated futures trader driven by RSS news rules and optional 
 
 **Thiết kế đầy đủ:** [docs/superpowers/specs/2026-05-20-crypto-news-trader-design.md](docs/superpowers/specs/2026-05-20-crypto-news-trader-design.md)
 
-**Hướng dẫn Futures (tiếng Việt):** [docs/HUONG-DAN-FUTURES.md](docs/HUONG-DAN-FUTURES.md) — cách dùng đúng testnet/live, margin, leverage, size lệnh, quy trình từng bước. Checklist live: [docs/KIEM-TRA-LIVE.md](docs/KIEM-TRA-LIVE.md).
+**Hướng dẫn Futures (tiếng Việt):** [docs/HUONG-DAN-FUTURES.md](docs/HUONG-DAN-FUTURES.md) — cách dùng đúng testnet/live, margin, leverage, size lệnh. **Tất cả lệnh + ví dụ:** [docs/LENH-THAM-CHIEU.md](docs/LENH-THAM-CHIEU.md). Checklist live: [docs/KIEM-TRA-LIVE.md](docs/KIEM-TRA-LIVE.md).
 
 ---
 

@@ -2,7 +2,7 @@
 
 Hoàn thành **tất cả** mục trước `npm run dev -- start --mode live`. Bản đầy đủ (English): [LIVE-SAFETY-CHECKLIST.md](./LIVE-SAFETY-CHECKLIST.md).
 
-Hướng dẫn tổng thể: [HUONG-DAN-FUTURES.md](./HUONG-DAN-FUTURES.md).
+Hướng dẫn tổng thể: [HUONG-DAN-FUTURES.md](./HUONG-DAN-FUTURES.md). Lệnh copy-paste: [LENH-THAM-CHIEU.md](./LENH-THAM-CHIEU.md).
 
 ---
 

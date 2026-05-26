@@ -2,6 +2,8 @@
 
 Tài liệu này mô tả **cách dùng đúng** sản phẩm Futures (hợp đồng vĩnh viễn USDT) trên Binance cùng bot CLI trong repo. Đọc kỹ trước khi chạy `testnet` hoặc `live`.
 
+**Tất cả lệnh + ví dụ copy-paste:** [LENH-THAM-CHIEU.md](./LENH-THAM-CHIEU.md)
+
 **Không phải tư vấn tài chính.** Bạn tự chịu trách nhiệm mọi lệnh, thua lỗ và tuân thủ pháp luật tại quốc gia của mình.
 
 ---
@@ -218,19 +220,7 @@ Nếu `allowLive: false`, bot **từ chối** với: `Refusing live mode: set al
 
 ## 6. Lệnh CLI thường dùng
 
-| Lệnh | Việc làm |
-|------|----------|
-| `validate` | Kiểm tra config |
-| `validate --dry-poll` | Thử poll RSS một lần, không cần Binance |
-| `feeds` | Trạng thái RSS trong DB |
-| `status --mode testnet` | Số dư, vị thế, signal gần đây |
-| `pause` / `resume` | Tạm dừng mở lệnh mới |
-| `start --mode …` | Chạy bot đầy đủ |
-| `backtest --from … --to …` | Backtest |
-| `export-trade-review` | Xuất CSV review |
-| `parity-check` | Smoke backtest profile production |
-
-Tất cả qua: `npm run dev -- <lệnh>`.
+Xem bảng đầy đủ và ví dụ từng lệnh trong **[LENH-THAM-CHIEU.md](./LENH-THAM-CHIEU.md)** (CLI + `npm run` + quy trình sim → live).
 
 ---
 
@@ -306,6 +296,7 @@ Timeframe production: **context 1d**, **entry 4h** (`timeframes` trong config).
 
 | File | Nội dung |
 |------|----------|
+| [LENH-THAM-CHIEU.md](./LENH-THAM-CHIEU.md) | **Tất cả lệnh + ví dụ** |
 | [README.md](../README.md) | Tổng quan dự án (song ngữ) |
 | [LIVE-SAFETY-CHECKLIST.md](./LIVE-SAFETY-CHECKLIST.md) | Checklist live (English) |
 | `config/production.yaml` | Profile vận hành khuyến nghị |
