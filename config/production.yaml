@@ -7,7 +7,7 @@ allowLive: false
 
 symbols:
   - BTCUSDT
-  - ETHUSDT
+  # - ETHUSDT
   # - SOLUSDT
   # - BNBUSDT
   # - XRPUSDT
@@ -102,7 +102,7 @@ strategy:
     targetExtension: 1.618
     stopBelowSwing: true
     stopBufferPercent: 0.002
-  entryProfile: intraday
+  entryProfile: swing
   profiles:
     swing:
       contextMode: elliott
@@ -139,8 +139,8 @@ strategy:
       slopeLookback: 3
 
 risk:
-  positionPercent: 15
-  minNotionalUsdt: 5
+  positionPercent: 25
+  minNotionalUsdt: 3
   maxNotionalUsdt: null
   slAtrMultiplier: 2.0
   tpAtrMultiplier: 3.0
@@ -159,7 +159,7 @@ binance:
   margin:
     enabled: true
     mode: isolated
-    leverage: 5
+    leverage: 50
   circuitBreaker:
     enabled: true
     maxFailures: 3
@@ -168,7 +168,7 @@ binance:
 sim:
   leverage: 6
   marginMode: isolated
-  initialBalanceUsdt: 10000
+  initialBalanceUsdt: 1000
   feeRate: 0.0004
   slippageBps: 5
   fillModel: conservative
