@@ -1,6 +1,7 @@
 import type { Command } from 'commander';
 import { fetch } from 'undici';
 import { loadConfigWithEnv } from '../../config/loader.js';
+import { collectProfileWarnings } from '../../config/profile-warnings.js';
 import type { AppConfig } from '../../config/schema.js';
 import type { FetchFn } from '../../news/rss-poller.js';
 import { createNewsStack } from '../news-stack.js';
@@ -61,6 +62,10 @@ export const registerValidateCommand = (program: Command): void => {
     .action(async (options: { config: string; dryPoll?: boolean }) => {
       try {
         const config = loadConfigWithEnv(options.config);
+
+        for (const w of collectProfileWarnings(config)) {
+          console.warn(`[validate] ${w}`);
+        }
 
         await validateOpenRouter(config);
 
