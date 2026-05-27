@@ -82,6 +82,7 @@ sentiment:
 
 # MTF entry (Phase 4): context 1d / entry 4h; fib zone 0.02 validated in Phase 6 matrix.
 strategy:
+  triggerMode: news   # news | technical — technical: no RSS, EMA context direction, scan symbols each entry candle
   atrPeriod: 14
   minAtrPercent: 0.12
   maxAtrPercent: 3.5

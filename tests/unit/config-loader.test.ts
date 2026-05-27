@@ -16,6 +16,11 @@ describe('config-loader', () => {
     expect(config.symbols).toContain('BTCUSDT');
   });
 
+  it('defaults strategy.triggerMode to news', () => {
+    const config = loadConfig(defaultConfigPath);
+    expect(config.strategy.triggerMode).toBe('news');
+  });
+
   it('loads binance.margin defaults', () => {
     const config = loadConfig(defaultConfigPath);
     expect(config.binance.margin.enabled).toBe(true);

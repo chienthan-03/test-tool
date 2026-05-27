@@ -34,6 +34,9 @@ export const AlternateEntryPathIdSchema = z.enum(['breakout', 'emaMomentum']);
 
 export const EntryProfileSchema = z.enum(['swing', 'intraday']);
 
+export const TriggerModeSchema = z.enum(['news', 'technical']).default('news');
+export type TriggerMode = z.infer<typeof TriggerModeSchema>;
+
 export const ContextEmaSchema = z.object({
   fastPeriod: z.number().int().min(2).max(100).default(20),
   slowPeriod: z.number().int().min(3).max(200).default(50),
@@ -139,6 +142,7 @@ export const AppConfigSchema = z.object({
     }),
   }),
   strategy: z.object({
+    triggerMode: TriggerModeSchema,
     atrPeriod: z.number().int().positive(),
     minAtrPercent: z.number().positive(),
     maxAtrPercent: z.number().positive().nullable().default(3.5),
