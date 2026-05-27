@@ -1,0 +1,11 @@
+# Run via backtest-matrix or copy overrides into local config
+name: backtest-technical
+configs:
+  - path: config/default.yaml
+    overrides:
+      strategy.triggerMode: technical
+      strategy.entryProfile: intraday
+      symbols: [BTCUSDT]
+      timeframes:
+        context: 15m
+        entry: 5m
