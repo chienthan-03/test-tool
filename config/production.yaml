@@ -7,7 +7,7 @@ allowLive: false
 
 symbols:
   - BTCUSDT
-  # - ETHUSDT
+  - ETHUSDT
   # - SOLUSDT
   # - BNBUSDT
   # - XRPUSDT
@@ -15,8 +15,8 @@ symbols:
 symbolOverrides: {}
 
 timeframes:
-  context: 1d
-  entry: 4h
+  context: 4h
+  entry: 1h
 
 feeds:
   - id: coindesk
@@ -80,7 +80,6 @@ sentiment:
     timeoutMs: 15000
     defaultTtlMinutes: 45
 
-# triggerMode: technical   # enable after backtest; disables RSS (see spec 2026-05-25-technical-trigger-mode)
 strategy:
   atrPeriod: 14
   minAtrPercent: 0.12
@@ -103,24 +102,25 @@ strategy:
     targetExtension: 1.618
     stopBelowSwing: true
     stopBufferPercent: 0.002
-  entryProfile: swing
+  triggerMode: technical   # enable after backtest; disables RSS (see spec 2026-05-25-technical-trigger-mode)
+  entryProfile: intraday
   profiles:
-    swing:
-      contextMode: elliott
-      entryPaths:
-        primary: fib
-      useAlternateFallback: false
-    # intraday:
-    #   contextMode: emaTrend
-    #   contextEma:
-    #     fastPeriod: 20
-    #     slowPeriod: 50
-    #     flatPercent: 0.0005
+    # swing:
+    #   contextMode: elliott
     #   entryPaths:
-    #     order: [breakout, emaMomentum]
-    #   positionScale: 0.75
+    #     primary: fib
+    #   useAlternateFallback: false
+    intraday:
+      contextMode: emaTrend
+      contextEma:
+        fastPeriod: 20
+        slowPeriod: 50
+        flatPercent: 0.0005
+      entryPaths:
+        order: [breakout, emaMomentum]
+      positionScale: 0.75
   alternateEntries:
-    enabled: false
+    enabled: true
     order:
       - breakout
       - emaMomentum

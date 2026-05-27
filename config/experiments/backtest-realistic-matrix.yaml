@@ -1,0 +1,12 @@
+# Backtest gần live nhất: nến thật + fixture RSS qua rule scorer (không mock).
+# Chạy prefetch-klines trước (xem docs/BACKTEST-SAT-LIVE.md).
+from: "2024-10-01"
+to: "2024-11-01"
+mockSentiment: false
+seedFromFixtures: true
+seedRepeat: 1
+experimentsDir: ./data/reports/experiments/backtest-realistic
+
+runs:
+  - id: production
+    config: config/production.yaml
