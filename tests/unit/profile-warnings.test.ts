@@ -74,4 +74,53 @@ describe('collectProfileWarnings', () => {
       ]);
     }
   });
+
+  it('warns intraday recommended when technical triggerMode uses swing entryProfile', () => {
+    const config: AppConfig = {
+      ...baseConfig,
+      timeframes: { context: '1d', entry: '4h' },
+      strategy: { ...baseConfig.strategy, triggerMode: 'technical', entryProfile: 'swing' },
+    };
+
+    expect(collectProfileWarnings(config)).toContain(
+      'triggerMode technical with entryProfile swing; intraday entryProfile recommended',
+    );
+  });
+
+  it('warns feeds ignored when technical triggerMode has any feed enabled', () => {
+    const config: AppConfig = {
+      ...baseConfig,
+      timeframes: { context: '1d', entry: '4h' },
+      strategy: { ...baseConfig.strategy, triggerMode: 'technical', entryProfile: 'intraday' },
+    };
+
+    expect(collectProfileWarnings(config)).toContain(
+      'triggerMode technical: RSS feeds are enabled in config but ignored at runtime',
+    );
+  });
+
+  it('does not warn feeds ignored for technical when all feeds are disabled', () => {
+    const disabledFeeds = baseConfig.feeds.map((f) => ({ ...f, enabled: false }));
+    const config: AppConfig = {
+      ...baseConfig,
+      feeds: disabledFeeds,
+      timeframes: { context: '1h', entry: '15m' },
+      strategy: { ...baseConfig.strategy, triggerMode: 'technical', entryProfile: 'intraday' },
+    };
+
+    expect(
+      collectProfileWarnings(config).some((w) => w.includes('RSS feeds') && w.includes('ignored')),
+    ).toBe(false);
+  });
+
+  it('does not add technical-only warnings when triggerMode is news', () => {
+    const config: AppConfig = {
+      ...baseConfig,
+      timeframes: { context: '1d', entry: '4h' },
+      strategy: { ...baseConfig.strategy, triggerMode: 'news', entryProfile: 'swing' },
+    };
+
+    const w = collectProfileWarnings(config);
+    expect(w.some((x) => x.includes('triggerMode technical'))).toBe(false);
+  });
 });

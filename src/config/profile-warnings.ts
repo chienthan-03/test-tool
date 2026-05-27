@@ -13,5 +13,13 @@ export const collectProfileWarnings = (config: AppConfig): string[] => {
       warnings.push('entryProfile swing with intraday entry TF; use 4h entry recommended');
     }
   }
+  if (config.strategy.triggerMode === 'technical') {
+    if (config.strategy.entryProfile === 'swing') {
+      warnings.push('triggerMode technical with entryProfile swing; intraday entryProfile recommended');
+    }
+    if (config.feeds.some((f) => f.enabled)) {
+      warnings.push('triggerMode technical: RSS feeds are enabled in config but ignored at runtime');
+    }
+  }
   return warnings;
 };
