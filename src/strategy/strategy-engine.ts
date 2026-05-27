@@ -9,6 +9,7 @@ import type {
 } from '../core/types.js';
 import type { KlineStore } from '../market/kline-store.js';
 import type { EntryGate } from './entry-gate.js';
+import type { NewsVetoEvaluator } from './news-veto-evaluator.js';
 import type { PendingSignalStore } from './pending-signals.js';
 import { resolveEmaContextDirection } from './technical-direction.js';
 
@@ -26,6 +27,7 @@ export class StrategyEngine {
     private readonly isInCooldown: (symbol: string) => boolean = () => false,
     private readonly isPaused: () => boolean,
     private readonly getNow: () => Date = () => new Date(),
+    private readonly newsVeto?: NewsVetoEvaluator,
   ) {
     this.bus.on('news:signal', (signal) => {
       void this.handleNewsSignal(signal);
@@ -152,6 +154,13 @@ export class StrategyEngine {
       const gate = this.entryGate.evaluate(symbol, direction, TECHNICAL_STRENGTH);
       if (!gate.allow || !gate.entry) {
         continue;
+      }
+
+      if (this.newsVeto) {
+        const veto = this.newsVeto.shouldVeto(symbol, direction, this.getNow());
+        if (veto.veto) {
+          continue;
+        }
       }
 
       const entry = gate.entry;

@@ -20,6 +20,7 @@ import { MtfEngine } from '../strategy/mtf-engine.js';
 import { PendingSignalStore } from '../strategy/pending-signals.js';
 import { SymbolCooldownTracker } from '../strategy/symbol-cooldown.js';
 import { StrategyEngine } from '../strategy/strategy-engine.js';
+import { wireNewsVeto } from '../strategy/wire-news-veto.js';
 
 export type PaperTradingStack = {
   strategy: StrategyEngine;
@@ -91,6 +92,7 @@ export const createPaperTradingStack = (params: {
     params.bus.on('strategy:gateReject', params.onGateReject);
   }
 
+  const newsVeto = wireNewsVeto(params.config, params.bus);
   const strategy = new StrategyEngine(
     params.config,
     params.bus,
@@ -101,6 +103,7 @@ export const createPaperTradingStack = (params: {
     (symbol) => cooldown.isBlocked(symbol),
     params.isPaused ?? (() => false),
     params.getNow,
+    newsVeto,
   );
 
   const risk = new RiskEngine(

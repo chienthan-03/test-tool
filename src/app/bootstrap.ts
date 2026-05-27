@@ -25,6 +25,7 @@ import { MtfEngine } from '../strategy/mtf-engine.js';
 import { PendingSignalStore } from '../strategy/pending-signals.js';
 import { SymbolCooldownTracker } from '../strategy/symbol-cooldown.js';
 import { StrategyEngine } from '../strategy/strategy-engine.js';
+import { wireNewsVeto } from '../strategy/wire-news-veto.js';
 import { openDatabase } from '../storage/db.js';
 import { migrate } from '../storage/migrate.js';
 import { FeedRepository } from '../storage/repositories/feed-repo.js';
@@ -173,10 +174,13 @@ const wireTradingStack = async (
 
   wireExecution(bus, adapter, tradeRepo, mode, log);
 
+  const startNewsStack =
+    config.strategy.triggerMode !== 'technical' || config.strategy.newsVeto.enabled;
+
   let newsPipeline: NewsPipeline | undefined;
   let rssManager: RssPollerManager | undefined;
 
-  if (config.strategy.triggerMode !== 'technical') {
+  if (startNewsStack) {
     const mapper = new SymbolMapper(config.symbols);
     const scorer = new RuleScorer(config.sentiment.rules);
     const merger = new SignalMerger({
@@ -239,6 +243,7 @@ const wireTradingStack = async (
   const pending = new PendingSignalStore();
   const cooldown = new SymbolCooldownTracker(config);
   cooldown.wire(bus);
+  const newsVeto = wireNewsVeto(config, bus);
   const strategy = new StrategyEngine(
     config,
     bus,
@@ -248,6 +253,8 @@ const wireTradingStack = async (
     async (symbol) => (await adapter.getPosition(symbol)) !== null,
     (symbol) => cooldown.isBlocked(symbol),
     isPaused,
+    undefined,
+    newsVeto,
   );
 
   const restBase = binanceRestBaseUrl(config);
@@ -286,7 +293,12 @@ const wireTradingStack = async (
 
   registerShutdown(ctx);
   log.info(
-    { symbols: config.symbols, mode, triggerMode: config.strategy.triggerMode },
+    {
+      symbols: config.symbols,
+      mode,
+      triggerMode: config.strategy.triggerMode,
+      newsVeto: config.strategy.newsVeto.enabled,
+    },
     `${mode}_runtime_started`,
   );
 

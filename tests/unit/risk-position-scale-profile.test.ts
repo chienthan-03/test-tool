@@ -43,6 +43,7 @@ describe('RiskEngine position scale by entryProfile', () => {
   it('applies intraday profile positionScale for any entry path', async () => {
     const config: AppConfig = {
       ...baseConfig,
+      sim: { ...baseConfig.sim, leverage: 1 },
       risk: { ...baseConfig.risk, positionPercent: 15 },
       strategy: {
         ...baseConfig.strategy,
@@ -85,6 +86,7 @@ describe('RiskEngine position scale by entryProfile', () => {
   it('does not scale swing fib path', async () => {
     const config: AppConfig = {
       ...baseConfig,
+      sim: { ...baseConfig.sim, leverage: 1 },
       risk: { ...baseConfig.risk, positionPercent: 15 },
       strategy: {
         ...baseConfig.strategy,
@@ -125,6 +127,7 @@ describe('RiskEngine position scale by entryProfile', () => {
   it('applies swing alternateEntries positionScale when enabled', async () => {
     const config: AppConfig = {
       ...baseConfig,
+      sim: { ...baseConfig.sim, leverage: 1 },
       risk: { ...baseConfig.risk, positionPercent: 15 },
       strategy: {
         ...baseConfig.strategy,

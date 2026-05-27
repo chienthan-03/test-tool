@@ -62,6 +62,24 @@ describe('calcQuantity', () => {
     expect(result).toBeNull();
   });
 
+  it('applies leverage to notional', () => {
+    const result = calcQuantity({
+      availableBalance: 32,
+      positionPercent: 50,
+      leverage: 20,
+      entryPrice: 100_000,
+      minNotional: 5,
+      maxNotional: null,
+      stepSize: 0.001,
+      minQty: 0.001,
+    });
+
+    expect(result).not.toBeNull();
+    // stepSize floor: 0.003 BTC × 100k = 300 USDT (target 320 before floor)
+    expect(result!.notional).toBe(300);
+    expect(result!.quantity).toBe(0.003);
+  });
+
   it('stepSize floor', () => {
     const result = calcQuantity({
       availableBalance: 1000,

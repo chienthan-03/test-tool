@@ -64,6 +64,7 @@ const generateMockSignals = (
         expiresAt: new Date(cursor + intervalHours * 3_600_000),
         source: 'rule',
         createdAt: new Date(cursor),
+        tags: [],
       });
     }
     cursor += intervalHours * 3_600_000;
@@ -171,16 +172,18 @@ export class BacktestReplayer {
     } = this.options;
 
     const isTechnical = config.strategy.triggerMode === 'technical';
+    const newsVetoEnabled = config.strategy.newsVeto.enabled;
+    const needsSignals = !isTechnical || newsVetoEnabled;
     let signals: NewsSignal[] = [];
 
-    if (isTechnical) {
+    if (isTechnical && !newsVetoEnabled) {
       signals = [];
       if (mockSentiment) {
         console.warn(
           '[backtest] triggerMode technical: mock sentiment is ignored (news signals are not used in this mode)',
         );
       }
-    } else {
+    } else if (needsSignals) {
       const signalRepo = new SignalRepository(db);
       signals = signalRepo.listBetween(from, to);
 
@@ -188,7 +191,9 @@ export class BacktestReplayer {
         signals = generateMockSignals(from, to, symbols, mockSentimentIntervalHours);
       } else if (signals.length === 0) {
         throw new Error(
-          'No news_signals in date range. Run sim first or pass --mock-sentiment.',
+          newsVetoEnabled
+            ? 'No news_signals in date range (required for newsVeto backtest). Run seed-signals or sim.'
+            : 'No news_signals in date range. Run sim first or pass --mock-sentiment.',
         );
       }
     }
@@ -283,7 +288,7 @@ export class BacktestReplayer {
         continue;
       }
 
-      if (!isTechnical) {
+      if (!isTechnical || newsVetoEnabled) {
         for (const signal of signalsInBar(signals, candle)) {
           bus.emit('news:signal', signal);
         }

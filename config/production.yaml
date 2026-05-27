@@ -1,16 +1,18 @@
-# Recommended operator profile — Phases 3–7 research merged (see config/default.yaml).
-# Point CONFIG_PATH here for testnet/sim; enable live only after docs/KIEM-TRA-LIVE.md (vi) or LIVE-SAFETY-CHECKLIST.md.
+# Recommended operator profile — Phases 3–7 + 2a news veto (technical intraday).
+# Micro account preset (~32 USDT): leverage applied to notional sizing (see risk + sim/binance.margin).
+# Point CONFIG_PATH here for testnet/sim; enable live only after docs/KIEM-TRA-LIVE.md.
 # Huong dan Futures (tieng Viet): docs/HUONG-DAN-FUTURES.md
+
 mode: sim
 
 allowLive: false
 
 symbols:
-  - BTCUSDT
-  - ETHUSDT
+  # - BTCUSDT
+  # - ETHUSDT
   # - SOLUSDT
   # - BNBUSDT
-  # - XRPUSDT
+  - XRPUSDT
 
 symbolOverrides: {}
 
@@ -102,7 +104,12 @@ strategy:
     targetExtension: 1.618
     stopBelowSwing: true
     stopBufferPercent: 0.002
-  triggerMode: technical   # enable after backtest; disables RSS (see spec 2026-05-25-technical-trigger-mode)
+  triggerMode: technical
+  newsVeto:
+    enabled: true
+    minStrength: 0.75
+    vetoTags: [macro, hack, etf]
+    leaderSymbol: BTCUSDT
   entryProfile: intraday
   profiles:
     # swing:
@@ -118,7 +125,7 @@ strategy:
         flatPercent: 0.0005
       entryPaths:
         order: [breakout, emaMomentum]
-      positionScale: 0.75
+      positionScale: 1
   alternateEntries:
     enabled: true
     order:
@@ -139,15 +146,17 @@ strategy:
       slowPeriod: 21
       slopeLookback: 3
 
+# Micro account: notional ≈ balance × positionPercent × leverage (maxNotional cap).
+# 200 × 50% × 10x = 1000 → cap 160 USDT notional (~0.001+ BTC).
 risk:
-  positionPercent: 25
-  minNotionalUsdt: 3
-  maxNotionalUsdt: null
+  positionPercent: 50
+  minNotionalUsdt: 5
+  maxNotionalUsdt: 110
   slAtrMultiplier: 2.0
   tpAtrMultiplier: 3.0
   trailingStop: false
   cooldownAfterLoss:
-    enabled: false
+    enabled: true
     durationHours: 12
 
 binance:
@@ -160,16 +169,16 @@ binance:
   margin:
     enabled: true
     mode: isolated
-    leverage: 50
+    leverage: 18
   circuitBreaker:
     enabled: true
     maxFailures: 3
     windowMs: 300000
 
 sim:
-  leverage: 6
+  leverage: 18
   marginMode: isolated
-  initialBalanceUsdt: 1000
+  initialBalanceUsdt: 600
   feeRate: 0.0004
   slippageBps: 5
   fillModel: conservative
@@ -188,5 +197,5 @@ logging:
 
 entryGates:
   enabled: true
-  logRejects: false
+  logRejects: true
   captureRejects: false

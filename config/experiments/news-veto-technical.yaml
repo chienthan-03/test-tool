@@ -1,5 +1,5 @@
-# Dev/default config — same strategy as config/production.yaml.
-# allowLive: false until you complete docs/LIVE-SAFETY-CHECKLIST.md (then set true for live only).
+# Experiment: technical trigger + news veto (macro/hack/etf tags, rule-only phase 1)
+# Copy of config/production.yaml with newsVeto enabled for backtest matrix / manual runs.
 mode: sim
 
 allowLive: false
@@ -7,15 +7,12 @@ allowLive: false
 symbols:
   - BTCUSDT
   - ETHUSDT
-  - SOLUSDT
-  - BNBUSDT
-  - XRPUSDT
 
 symbolOverrides: {}
 
 timeframes:
-  context: 1d
-  entry: 4h
+  context: 4h
+  entry: 1h
 
 feeds:
   - id: coindesk
@@ -27,7 +24,6 @@ feeds:
     pollIntervalSec: 120
     enabled: true
 
-# Win-rate: rule-only sentiment (Phase 3). LLM adds latency/cost; enable only after A/B backtest.
 sentiment:
   rules:
     impactHigh: 3
@@ -71,7 +67,7 @@ sentiment:
         keywords: [etf, approval, inflow]
         impact: 2
   llm:
-    enabled: false # Phase 3 preset — keep false for production parity with backtest matrix
+    enabled: false
     provider: openrouter
     baseUrl: https://openrouter.ai/api/v1
     model: openai/gpt-oss-120b:free
@@ -80,14 +76,7 @@ sentiment:
     timeoutMs: 15000
     defaultTtlMinutes: 45
 
-# MTF entry (Phase 4): context 1d / entry 4h; fib zone 0.02 validated in Phase 6 matrix.
 strategy:
-  triggerMode: news   # news | technical — technical: no RSS, EMA context direction, scan symbols each entry candle
-  newsVeto:
-    enabled: false
-    minStrength: 0.75
-    vetoTags: [macro, hack, etf]
-    leaderSymbol: BTCUSDT
   atrPeriod: 14
   minAtrPercent: 0.12
   maxAtrPercent: 3.5
@@ -104,18 +93,19 @@ strategy:
   fibonacci:
     entryMin: 0.382
     entryMax: 0.618
-    zoneTolerancePercent: 0.02 # Phase 4/6 — tighter than 0.05 pre-research
+    zoneTolerancePercent: 0.02
     stopLevel: 0.886
     targetExtension: 1.618
     stopBelowSwing: true
     stopBufferPercent: 0.002
-  entryProfile: swing
+  triggerMode: technical
+  newsVeto:
+    enabled: true
+    minStrength: 0.75
+    vetoTags: [macro, hack, etf]
+    leaderSymbol: BTCUSDT
+  entryProfile: intraday
   profiles:
-    swing:
-      contextMode: elliott
-      entryPaths:
-        primary: fib
-      useAlternateFallback: true
     intraday:
       contextMode: emaTrend
       contextEma:
@@ -126,7 +116,7 @@ strategy:
         order: [breakout, emaMomentum]
       positionScale: 0.75
   alternateEntries:
-    enabled: false
+    enabled: true
     order:
       - breakout
       - emaMomentum
@@ -145,16 +135,15 @@ strategy:
       slowPeriod: 21
       slopeLookback: 3
 
-# Risk (Phase 7): cooldown off on baseline matrix; tune via risk.cooldownAfterLoss experiments.
 risk:
-  positionPercent: 15
-  minNotionalUsdt: 5
+  positionPercent: 25
+  minNotionalUsdt: 3
   maxNotionalUsdt: null
   slAtrMultiplier: 2.0
   tpAtrMultiplier: 3.0
   trailingStop: false
   cooldownAfterLoss:
-    enabled: false # Phase 7 — risk-baseline won vs 12h/24h cooldown variants
+    enabled: false
     durationHours: 12
 
 binance:
@@ -167,7 +156,7 @@ binance:
   margin:
     enabled: true
     mode: isolated
-    leverage: 5
+    leverage: 50
   circuitBreaker:
     enabled: true
     maxFailures: 3
@@ -176,7 +165,7 @@ binance:
 sim:
   leverage: 6
   marginMode: isolated
-  initialBalanceUsdt: 10000
+  initialBalanceUsdt: 1000
   feeRate: 0.0004
   slippageBps: 5
   fillModel: conservative
@@ -193,8 +182,7 @@ logging:
   level: info
   pretty: true
 
-# Phase 6 EntryGate — vetoes weak MTF setups before risk engine.
 entryGates:
   enabled: true
   logRejects: false
-  captureRejects: false # set true + re-backtest to export gateRejects in trade review CSV
+  captureRejects: false

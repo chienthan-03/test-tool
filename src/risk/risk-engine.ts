@@ -38,6 +38,16 @@ export class RiskEngine {
     return override ?? this.config.risk.positionPercent;
   }
 
+  private resolveLeverage(): number {
+    if (this.config.mode === 'sim') {
+      return this.config.sim.leverage;
+    }
+    if (this.config.binance.margin.enabled) {
+      return this.config.binance.margin.leverage;
+    }
+    return 1;
+  }
+
   private async handleIntent(intent: TradeIntent): Promise<void> {
     const filters = await this.getFilters(intent.symbol);
     const balance = await this.getBalance();
@@ -64,6 +74,7 @@ export class RiskEngine {
       maxNotional: this.config.risk.maxNotionalUsdt,
       stepSize: filters.stepSize,
       minQty: filters.minQty,
+      leverage: this.resolveLeverage(),
     });
 
     if (!sized) {

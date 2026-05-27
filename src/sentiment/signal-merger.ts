@@ -84,6 +84,7 @@ export class SignalMerger {
       expiresAt,
       source,
       createdAt: now,
+      tags: rule.tags,
     };
   }
 }

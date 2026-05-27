@@ -192,6 +192,7 @@ describe('strategy-sim integration', () => {
       expiresAt: new Date(now.getTime() + 3_600_000),
       source: 'rule',
       createdAt: now,
+      tags: [],
     };
 
     bus.emit('news:signal', signal);

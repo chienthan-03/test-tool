@@ -356,6 +356,41 @@ strategy:
 
 Spec đầy đủ: [2026-05-25-technical-trigger-mode-design.md](./superpowers/specs/2026-05-25-technical-trigger-mode-design.md).
 
+### 7.9 Bot technical + news veto (2a)
+
+Biến thể **2a** giữ `triggerMode: technical` (vào lệnh theo EMA context mỗi nến entry đóng) nhưng **bật thêm lớp veto tin** qua `strategy.newsVeto.enabled: true`. Đây là cờ tùy chọn — không phải giá trị `triggerMode` mới.
+
+**Khi bật:**
+
+- Bot **vẫn khởi động RSS** và `NewsPipeline` (rule-only, phase 1) để thu tín hiệu có tag `macro`, `hack`, hoặc `etf` với `strength >= minStrength` (mặc định **0.75**).
+- Sau khi setup kỹ thuật qua `EntryGate`, bot **chặn** lệnh nếu có tin **ngược chiều** (asymmetric veto — cùng chiều không bị chặn).
+- **BTC leader:** tin gắn `leaderSymbol` (mặc định `BTCUSDT`) có thể veto **mọi symbol** trong `symbols`, kể cả khi tin chỉ map BTC; tin chỉ gắn alt (vd. ETH hack) **không** veto BTC long.
+- **Phase 1 rule-only:** đặt `sentiment.llm.enabled: false`; validate cảnh báo nếu LLM bật. Veto chỉ dựa trên rule tags, không LLM.
+- **Backtest:** cần `news_signals` có tags trong khoảng thời gian (seed/sim) — không dùng `--mock-sentiment` như technical thuần.
+
+**Khi tắt (`newsVeto.enabled: false`, mặc định):** hành vi giống mục 7.8 — RSS không chạy trên technical thuần.
+
+Ví dụ bật (từ comment trong `config/production.yaml`):
+
+```yaml
+strategy:
+  triggerMode: technical
+  entryProfile: intraday
+  # newsVeto:
+  #   enabled: true
+  #   minStrength: 0.75
+  #   vetoTags: [macro, hack, etf]
+  #   leaderSymbol: BTCUSDT
+
+sentiment:
+  llm:
+    enabled: false   # bắt buộc cho phase 1 news veto
+```
+
+Preset thử nghiệm: `config/experiments/news-veto-technical.yaml`.
+
+Spec đầy đủ: [2026-05-27-news-veto-technical-design.md](./superpowers/specs/2026-05-27-news-veto-technical-design.md).
+
 ---
 
 ## 8. Checklist trước Live (tóm tắt tiếng Việt)
@@ -371,6 +406,7 @@ Spec đầy đủ: [2026-05-25-technical-trigger-mode-design.md](./superpowers/s
 - [ ] Biết `pause` và đóng vị thế tay trên Binance
 - [ ] Chỉ sau đó: `allowLive: true` + `start --mode live`
 - [ ] Nếu dùng `strategy.triggerMode: technical`: đã hiểu bot **không** đọc tin — xác nhận cố ý trước live (đối chiếu [LIVE-SAFETY-CHECKLIST.md](./LIVE-SAFETY-CHECKLIST.md))
+- [ ] Nếu bật `strategy.newsVeto.enabled`: đã hiểu RSS chạy lại, BTC leader veto cross-symbol, và `llm.enabled: false` (mục 7.9)
 
 ---
 
@@ -387,6 +423,7 @@ Spec đầy đủ: [2026-05-25-technical-trigger-mode-design.md](./superpowers/s
 | Thử lối vào breakout / EMA | `strategy.alternateEntries.enabled: true` — chỉ sau backtest matrix; xem mục 7.6 |
 | Chuyển swing ↔ intraday | `strategy.entryProfile` + đổi `timeframes` tương ứng; xem mục 7.7 |
 | Chỉ kỹ thuật, không RSS | `strategy.triggerMode: technical` + intraday; xem mục 7.8 |
+| Technical + veto tin macro/hack/etf | `triggerMode: technical` + `newsVeto.enabled: true`; xem mục 7.9 |
 
 Timeframe production (swing): **context 1d**, **entry 4h**. Intraday khuyến nghị **1h** / **15m**.
 
@@ -418,7 +455,8 @@ Timeframe production (swing): **context 1d**, **entry 4h**. Intraday khuyến ng
 | [superpowers/specs/2026-05-25-alternate-entry-paths-design.md](./superpowers/specs/2026-05-25-alternate-entry-paths-design.md) | Lối vào thay thế (Fib-first fallback) |
 | [superpowers/specs/2026-05-27-entry-profile-momentum-design.md](./superpowers/specs/2026-05-27-entry-profile-momentum-design.md) | Hồ sơ swing vs intraday (`entryProfile`) |
 | [superpowers/specs/2026-05-25-technical-trigger-mode-design.md](./superpowers/specs/2026-05-25-technical-trigger-mode-design.md) | `strategy.triggerMode` news vs technical (không tin) |
+| [superpowers/specs/2026-05-27-news-veto-technical-design.md](./superpowers/specs/2026-05-27-news-veto-technical-design.md) | `strategy.newsVeto` trên technical (2a) |
 
 ---
 
-*Cập nhật: 2026-05-27 — mục 7.8 `triggerMode: technical`; 7.7 `entryProfile` swing/intraday; 7.6 `alternateEntries`; Phase 10 rollout (`production.yaml`, `allowLive: false` mặc định).*
+*Cập nhật: 2026-05-28 — mục 7.9 `newsVeto` trên technical (2a); 7.8 `triggerMode: technical`; 7.7 `entryProfile` swing/intraday; 7.6 `alternateEntries`; Phase 10 rollout (`production.yaml`, `allowLive: false` mặc định).*

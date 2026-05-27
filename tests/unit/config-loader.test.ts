@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { parse, stringify } from 'yaml';
 import { ZodError } from 'zod';
 import { loadConfig } from '../../src/config/loader.js';
+import { AppConfigSchema } from '../../src/config/schema.js';
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const defaultConfigPath = join(projectRoot, 'config/default.yaml');
@@ -40,6 +41,24 @@ describe('config-loader', () => {
     expect(config.strategy.entryProfile).toBe('swing');
     expect(config.strategy.profiles.intraday.positionScale).toBe(0.75);
     expect(config.strategy.profiles.intraday.entryPaths.order).toEqual(['breakout', 'emaMomentum']);
+  });
+
+  it('defaults strategy.newsVeto.enabled to false', () => {
+    const config = loadConfig(defaultConfigPath);
+    expect(config.strategy.newsVeto.enabled).toBe(false);
+    expect(config.strategy.newsVeto.vetoTags).toEqual(['macro', 'hack', 'etf']);
+    expect(config.strategy.newsVeto.leaderSymbol).toBe('BTCUSDT');
+  });
+
+  it('rejects newsVeto.enabled when all feeds disabled', () => {
+    const minimalValidConfig = loadConfig(defaultConfigPath);
+    expect(() =>
+      AppConfigSchema.parse({
+        ...minimalValidConfig,
+        feeds: [{ id: 'x', url: 'https://example.com/rss', pollIntervalSec: 60, enabled: false }],
+        strategy: { ...minimalValidConfig.strategy, newsVeto: { enabled: true } },
+      }),
+    ).toThrow(/newsVeto/);
   });
 
   it('rejects empty symbols', () => {

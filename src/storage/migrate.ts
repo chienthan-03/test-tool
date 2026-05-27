@@ -3,11 +3,12 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const TARGET_VERSION = 2;
+const TARGET_VERSION = 3;
 
 const MIGRATION_FILES: Record<number, string> = {
   1: '001_initial.sql',
   2: '002_entry_path.sql',
+  3: '003_news_signal_tags.sql',
 };
 
 const migrationsDir = dirname(fileURLToPath(import.meta.url));

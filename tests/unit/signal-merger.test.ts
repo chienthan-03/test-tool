@@ -85,4 +85,20 @@ describe('SignalMerger', () => {
 
     expect(signal?.symbols).toEqual(['BTCUSDT']);
   });
+
+  it('includes rule tags on emitted signal', () => {
+    const signal = merger.build(
+      {
+        newsId: 'n1',
+        impactScore: 3,
+        ruleSentiment: -1,
+        priority: 'high',
+        tags: ['macro', 'etf'],
+        needsLlm: false,
+      },
+      makeNewsItem(),
+      null,
+    );
+    expect(signal?.tags).toEqual(['macro', 'etf']);
+  });
 });

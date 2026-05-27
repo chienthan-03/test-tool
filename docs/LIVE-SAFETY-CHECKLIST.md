@@ -11,6 +11,7 @@ Complete **every** item before `npm run dev -- start --mode live` with real fund
 - [ ] Set `allowLive: true` **only** in the config you will use for live (intentional promotion)
 - [ ] Confirm `mode` on CLI is `live` (not sim/testnet)
 - [ ] Review win-rate settings: `sentiment.llm.enabled`, `strategy.fibonacci.zoneTolerancePercent`, `entryGates.enabled`, `risk.cooldownAfterLoss`
+- [ ] If `strategy.newsVeto.enabled`: confirm RSS feeds enabled; understand BTC leader vetoes all symbols; `llm.enabled` false for phase 1
 - [ ] Confirm `strategy.triggerMode` is intentional (`news` = RSS/news pipeline; `technical` = no news, EMA-driven scans — different risk profile than news backtests)
 
 ## 2. API keys & exchange

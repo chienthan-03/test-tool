@@ -6,8 +6,10 @@ export const calcQuantity = (params: {
   maxNotional: number | null;
   stepSize: number;
   minQty: number;
+  leverage?: number;
 }): { quantity: number; notional: number } | null => {
-  let notional = params.availableBalance * (params.positionPercent / 100);
+  const leverage = params.leverage ?? 1;
+  let notional = params.availableBalance * (params.positionPercent / 100) * leverage;
   if (params.maxNotional != null) {
     notional = Math.min(notional, params.maxNotional);
   }

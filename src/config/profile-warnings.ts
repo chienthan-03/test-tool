@@ -17,7 +17,21 @@ export const collectProfileWarnings = (config: AppConfig): string[] => {
     if (config.strategy.entryProfile === 'swing') {
       warnings.push('triggerMode technical with entryProfile swing; intraday entryProfile recommended');
     }
-    if (config.feeds.some((f) => f.enabled)) {
+    if (config.strategy.newsVeto.enabled) {
+      if (config.feeds.some((f) => f.enabled)) {
+        warnings.push(
+          'newsVeto enabled: RSS feeds active for macro veto; trades remain technical',
+        );
+      }
+      if (!config.symbols.includes(config.strategy.newsVeto.leaderSymbol)) {
+        warnings.push(
+          `newsVeto.leaderSymbol ${config.strategy.newsVeto.leaderSymbol} not in symbols; BTC leader rule inactive`,
+        );
+      }
+      if (config.sentiment.llm.enabled) {
+        warnings.push('newsVeto phase 1 expects rule-only sentiment; llm.enabled should be false');
+      }
+    } else if (config.feeds.some((f) => f.enabled)) {
       warnings.push('triggerMode technical: RSS feeds are enabled in config but ignored at runtime');
     }
   }

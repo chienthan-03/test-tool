@@ -101,7 +101,22 @@ export const AlternateEntriesConfigSchema = z.object({
   }),
 });
 
-export const AppConfigSchema = z.object({
+export const NewsVetoConfigSchema = z
+  .object({
+    enabled: z.boolean().default(false),
+    minStrength: z.number().min(0).max(1).default(0.75),
+    vetoTags: z.array(z.string().min(1)).min(1).default(['macro', 'hack', 'etf']),
+    leaderSymbol: futuresSymbol.default('BTCUSDT'),
+  })
+  .default({
+    enabled: false,
+    minStrength: 0.75,
+    vetoTags: ['macro', 'hack', 'etf'],
+    leaderSymbol: 'BTCUSDT',
+  });
+
+export const AppConfigSchema = z
+  .object({
   mode: z.enum(['live', 'testnet', 'sim']).default('sim'),
   allowLive: z.boolean().default(false),
   symbols: z.array(futuresSymbol).min(1),
@@ -143,6 +158,7 @@ export const AppConfigSchema = z.object({
   }),
   strategy: z.object({
     triggerMode: TriggerModeSchema,
+    newsVeto: NewsVetoConfigSchema,
     atrPeriod: z.number().int().positive(),
     minAtrPercent: z.number().positive(),
     maxAtrPercent: z.number().positive().nullable().default(3.5),
@@ -213,6 +229,8 @@ export const AppConfigSchema = z.object({
   }),
   sim: z.object({
     initialBalanceUsdt: z.number().positive(),
+    leverage: z.number().int().min(1).max(125).default(1),
+    marginMode: MarginModeSchema.default('isolated'),
     feeRate: z.number().min(0),
     slippageBps: z.number().min(0),
     fillModel: z.enum(['conservative', 'optimistic']),
@@ -231,7 +249,16 @@ export const AppConfigSchema = z.object({
       captureRejects: z.boolean().default(false),
     })
     .default({ enabled: true, logRejects: false, captureRejects: false }),
-});
+})
+  .superRefine((cfg, ctx) => {
+    if (cfg.strategy.newsVeto.enabled && !cfg.feeds.some((f) => f.enabled)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'strategy.newsVeto.enabled requires at least one enabled feed',
+        path: ['strategy', 'newsVeto', 'enabled'],
+      });
+    }
+  });
 
 export type AppConfig = z.infer<typeof AppConfigSchema>;
 export type FeedConfig = z.infer<typeof FeedSchema>;

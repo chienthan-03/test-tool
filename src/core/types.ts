@@ -55,6 +55,7 @@ export interface NewsSignal {
   expiresAt: Date;
   source: SignalSource;
   createdAt: Date;
+  tags: string[];
 }
 
 export interface Candle {

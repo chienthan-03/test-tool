@@ -15,6 +15,7 @@ describe('event-bus', () => {
       expiresAt: new Date('2026-05-20T12:00:00.000Z'),
       source: 'rule',
       createdAt: new Date('2026-05-20T11:00:00.000Z'),
+      tags: [],
     };
 
     bus.on('news:signal', handler);

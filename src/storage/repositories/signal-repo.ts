@@ -10,6 +10,7 @@ interface SignalRow {
   source: SignalSource;
   expires_at: string;
   created_at: string;
+  tags_json: string;
 }
 
 const rowToSignal = (row: SignalRow): NewsSignal => ({
@@ -21,6 +22,7 @@ const rowToSignal = (row: SignalRow): NewsSignal => ({
   source: row.source,
   expiresAt: new Date(row.expires_at),
   createdAt: new Date(row.created_at),
+  tags: JSON.parse(row.tags_json ?? '[]') as string[],
 });
 
 export class SignalRepository {
@@ -30,8 +32,8 @@ export class SignalRepository {
     this.db
       .prepare(
         `INSERT INTO news_signals (
-          id, news_id, symbols_json, direction, strength, source, expires_at, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          id, news_id, symbols_json, direction, strength, source, expires_at, created_at, tags_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         signal.id,
@@ -42,6 +44,7 @@ export class SignalRepository {
         signal.source,
         signal.expiresAt.toISOString(),
         signal.createdAt.toISOString(),
+        JSON.stringify(signal.tags ?? []),
       );
   }
 
@@ -56,7 +59,7 @@ export class SignalRepository {
   listBetween(from: Date, to: Date): NewsSignal[] {
     const rows = this.db
       .prepare(
-        `SELECT id, news_id, symbols_json, direction, strength, source, expires_at, created_at
+        `SELECT id, news_id, symbols_json, direction, strength, source, expires_at, created_at, tags_json
          FROM news_signals
          WHERE created_at >= ? AND created_at <= ?
          ORDER BY created_at ASC`,

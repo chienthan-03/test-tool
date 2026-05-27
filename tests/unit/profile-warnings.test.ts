@@ -123,4 +123,59 @@ describe('collectProfileWarnings', () => {
     const w = collectProfileWarnings(config);
     expect(w.some((x) => x.includes('triggerMode technical'))).toBe(false);
   });
+
+  it('warns feeds active for veto when technical + newsVeto.enabled', () => {
+    const config: AppConfig = {
+      ...baseConfig,
+      strategy: {
+        ...baseConfig.strategy,
+        triggerMode: 'technical',
+        entryProfile: 'intraday',
+        newsVeto: { ...baseConfig.strategy.newsVeto, enabled: true },
+      },
+    };
+    expect(collectProfileWarnings(config)).toContain(
+      'newsVeto enabled: RSS feeds active for macro veto; trades remain technical',
+    );
+    expect(
+      collectProfileWarnings(config).some((w) => w.includes('RSS feeds') && w.includes('ignored')),
+    ).toBe(false);
+  });
+
+  it('warns when leaderSymbol not in symbols', () => {
+    const config: AppConfig = {
+      ...baseConfig,
+      symbols: ['ETHUSDT'],
+      strategy: {
+        ...baseConfig.strategy,
+        triggerMode: 'technical',
+        newsVeto: {
+          ...baseConfig.strategy.newsVeto,
+          enabled: true,
+          leaderSymbol: 'BTCUSDT',
+        },
+      },
+    };
+    expect(collectProfileWarnings(config)).toContain(
+      'newsVeto.leaderSymbol BTCUSDT not in symbols; BTC leader rule inactive',
+    );
+  });
+
+  it('warns when llm.enabled with newsVeto', () => {
+    const config: AppConfig = {
+      ...baseConfig,
+      strategy: {
+        ...baseConfig.strategy,
+        triggerMode: 'technical',
+        newsVeto: { ...baseConfig.strategy.newsVeto, enabled: true },
+      },
+      sentiment: {
+        ...baseConfig.sentiment,
+        llm: { ...baseConfig.sentiment.llm, enabled: true },
+      },
+    };
+    expect(collectProfileWarnings(config)).toContain(
+      'newsVeto phase 1 expects rule-only sentiment; llm.enabled should be false',
+    );
+  });
 });
