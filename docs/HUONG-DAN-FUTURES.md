@@ -2,7 +2,8 @@
 
 Tài liệu này mô tả **cách dùng đúng** sản phẩm Futures (hợp đồng vĩnh viễn USDT) trên Binance cùng bot CLI trong repo. Đọc kỹ trước khi chạy `testnet` hoặc `live`.
 
-**Tất cả lệnh + ví dụ copy-paste:** [LENH-THAM-CHIEU.md](./LENH-THAM-CHIEU.md)
+**Tất cả lệnh + ví dụ copy-paste:** [LENH-THAM-CHIEU.md](./LENH-THAM-CHIEU.md)  
+**Backtest quá khứ gần live nhất:** [BACKTEST-SAT-LIVE.md](./BACKTEST-SAT-LIVE.md)
 
 **Không phải tư vấn tài chính.** Bạn tự chịu trách nhiệm mọi lệnh, thua lỗ và tuân thủ pháp luật tại quốc gia của mình.
 
@@ -334,6 +335,27 @@ Preset thử nghiệm: `config/experiments/profile-swing-baseline.yaml`, `profil
 
 Chi tiết kỹ thuật: [spec entry profile momentum](./superpowers/specs/2026-05-27-entry-profile-momentum-design.md).
 
+### 7.8 Bot thuần kỹ thuật (không tin)
+
+Bạn có thể chạy **cùng một stack thực thi** (risk → adapter/sim) nhưng **không phụ thuộc RSS hay bảng `news_signals`** bằng cách đặt:
+
+```yaml
+strategy:
+  triggerMode: technical   # mặc định: news
+  entryProfile: intraday
+```
+
+**Hành vi chính (tóm tắt):**
+
+- Bot **không** khởi động RSS / `NewsPipeline` — tiết kiệm CPU và mạng.
+- Mỗi khi nến khung **entry** (`timeframes.entry`) đóng, bot xét **từng symbol** trong `symbols`: hướng từ **EMA nhanh/chậm** trên khung **context** (`timeframes.context`) và `strategy.profiles.intraday.contextEma`; nếu thị trường “flat” hoặc thiếu nến → **bỏ qua** symbol đó.
+- `waitForNextCandleClose` **không** áp dụng kiểu “chờ tin trước”; độ mạnh vào gate cố định **1.0**; metadata intent dùng `newsId: technical` (để lọc trong DB/export).
+- **Backtest:** chỉ cần file kline đã tải (`prefetch-klines`) — **không** cần `seed-signals` hay `--mock-sentiment`.
+
+**Rủi ro vận hành:** technical có thể **mật độ lệnh khác hẳn** so với mode tin; nên giảm `risk.positionPercent`, bật `cooldownAfterLoss`, và luôn so sánh backtest trước live. `entryProfile: swing` + `technical` chỉ được **cảnh báo** khi validate — tối ưu vẫn là intraday + `timeframes` khớp profile.
+
+Spec đầy đủ: [2026-05-25-technical-trigger-mode-design.md](./superpowers/specs/2026-05-25-technical-trigger-mode-design.md).
+
 ---
 
 ## 8. Checklist trước Live (tóm tắt tiếng Việt)
@@ -348,6 +370,7 @@ Chi tiết kỹ thuật: [spec entry profile momentum](./superpowers/specs/2026-
 - [ ] Hiểu `positionPercent`, leverage, isolated/cross
 - [ ] Biết `pause` và đóng vị thế tay trên Binance
 - [ ] Chỉ sau đó: `allowLive: true` + `start --mode live`
+- [ ] Nếu dùng `strategy.triggerMode: technical`: đã hiểu bot **không** đọc tin — xác nhận cố ý trước live (đối chiếu [LIVE-SAFETY-CHECKLIST.md](./LIVE-SAFETY-CHECKLIST.md))
 
 ---
 
@@ -363,6 +386,7 @@ Chi tiết kỹ thuật: [spec entry profile momentum](./superpowers/specs/2026-
 | Bật LLM sentiment | `sentiment.llm.enabled: true` + `OPENROUTER_API_KEY` — chỉ sau khi đã so sánh backtest |
 | Thử lối vào breakout / EMA | `strategy.alternateEntries.enabled: true` — chỉ sau backtest matrix; xem mục 7.6 |
 | Chuyển swing ↔ intraday | `strategy.entryProfile` + đổi `timeframes` tương ứng; xem mục 7.7 |
+| Chỉ kỹ thuật, không RSS | `strategy.triggerMode: technical` + intraday; xem mục 7.8 |
 
 Timeframe production (swing): **context 1d**, **entry 4h**. Intraday khuyến nghị **1h** / **15m**.
 
@@ -393,7 +417,8 @@ Timeframe production (swing): **context 1d**, **entry 4h**. Intraday khuyến ng
 | `.planning/phases/08-trade-review-workflow/REVIEW-PROCESS.md` | Quy trình review lệnh |
 | [superpowers/specs/2026-05-25-alternate-entry-paths-design.md](./superpowers/specs/2026-05-25-alternate-entry-paths-design.md) | Lối vào thay thế (Fib-first fallback) |
 | [superpowers/specs/2026-05-27-entry-profile-momentum-design.md](./superpowers/specs/2026-05-27-entry-profile-momentum-design.md) | Hồ sơ swing vs intraday (`entryProfile`) |
+| [superpowers/specs/2026-05-25-technical-trigger-mode-design.md](./superpowers/specs/2026-05-25-technical-trigger-mode-design.md) | `strategy.triggerMode` news vs technical (không tin) |
 
 ---
 
-*Cập nhật: 2026-05-27 — mục 7.7 `entryProfile` swing/intraday; 7.6 `alternateEntries`; Phase 10 rollout (`production.yaml`, `allowLive: false` mặc định).*
+*Cập nhật: 2026-05-27 — mục 7.8 `triggerMode: technical`; 7.7 `entryProfile` swing/intraday; 7.6 `alternateEntries`; Phase 10 rollout (`production.yaml`, `allowLive: false` mặc định).*

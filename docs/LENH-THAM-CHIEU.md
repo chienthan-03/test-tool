@@ -29,6 +29,21 @@ cp .env.example .env
 
 Hướng dẫn Futures (tiếng Việt): [HUONG-DAN-FUTURES.md](./HUONG-DAN-FUTURES.md)
 
+**Kích hoạt chiến lược (`strategy.triggerMode`):**
+
+| Giá trị | Ý nghĩa ngắn |
+|---------|----------------|
+| `news` | **Mặc định** — RSS + pipeline tin như thiết kế gốc; backtest thường cần `news_signals` trong DB và/hoặc `seed-signals`, hoặc `--mock-sentiment` tùy kịch bản. |
+| `technical` | **Không tin** — không poll RSS, không chạy `NewsPipeline`; mỗi lần nến **timeframes.entry** đóng, bot đánh giá **mọi** symbol trong `symbols`, chiều long/short từ EMA context (`strategy.profiles.intraday.contextEma`, cùng logic flat với `EmaTrendContextGate`). Chi tiết: [technical trigger mode](./superpowers/specs/2026-05-25-technical-trigger-mode-design.md). |
+
+**Backtest khi `triggerMode: technical`:** chỉ cần **nến đã prefetch** trong khoảng `--from` / `--to` — **không** bắt buộc `seed-signals` và **không** cần `--mock-sentiment` (nếu vẫn truyền mock, CLI có thể cảnh báo và bỏ qua).
+
+```yaml
+strategy:
+  triggerMode: technical   # news | technical
+  entryProfile: intraday   # khuyến nghị với technical; xem validate warn nếu swing
+```
+
 ---
 
 ## 1. Cài đặt & build
@@ -112,7 +127,7 @@ npm run dev -- pause
 npm run dev -- resume
 ```
 
-Bot vẫn poll tin; file `data/.paused` chặn lệnh mới.
+Bot vẫn poll tin (trừ khi `strategy.triggerMode: technical` — không RSS); file `data/.paused` chặn lệnh mới.
 
 ---
 
@@ -165,7 +180,9 @@ npm run dev -- backtest --from 2025-01-01 --to 2025-01-31 \
 | `--from <iso>` | Có | Ngày bắt đầu (ISO) |
 | `--to <iso>` | Có | Ngày kết thúc (ISO) |
 | `--config <path>` | Không | Config |
-| `--mock-sentiment` | Không | Signal long giả mỗi 6h (nghiên cứu) |
+| `--mock-sentiment` | Không | Signal long giả mỗi 6h (nghiên cứu; với `strategy.triggerMode: technical` thường bị bỏ qua — xem spec) |
+
+Khi `strategy.triggerMode: news`, backtest cần dữ liệu signal trong DB (ví dụ sau `seed-signals` hoặc từ sim) hoặc `--mock-sentiment`, trừ khi bạn dùng kịch bản khác đã ghi trong [BACKTEST-SAT-LIVE.md](./BACKTEST-SAT-LIVE.md). Khi `triggerMode: technical`, **không** cần seed/mock — đủ kline cache + `prefetch-klines` đúng window.
 
 Báo cáo đầy đủ: `data/reports/.../report.json` (theo `backtest.reportDir` trong config).
 
@@ -364,7 +381,24 @@ npm run dev -- pause
 npm run dev -- resume
 ```
 
-### 4.3 Backtest + review
+### 4.3 Backtest gần live nhất (không mock)
+
+Xem chi tiết: [BACKTEST-SAT-LIVE.md](./BACKTEST-SAT-LIVE.md).
+
+```bash
+npm run prefetch-klines -- --config config/production.yaml --from 2024-10-01 --to 2024-12-31
+npm run seed-signals -- --config config/production.yaml --db data/trader.db \
+  --from 2024-10-01 --to 2024-11-01 --repeat 1 --no-llm
+npm run dev -- backtest --from 2024-10-01 --to 2024-11-01 --config config/production.yaml
+```
+
+Hoặc matrix một lệnh:
+
+```bash
+npm run backtest-matrix -- --matrix config/experiments/backtest-realistic-matrix.yaml
+```
+
+### 4.4 Backtest + review
 
 ```bash
 npm run prefetch-klines -- --config config/production.yaml --from 2024-10-01 --to 2024-12-31
@@ -375,7 +409,7 @@ npm run export-trade-review -- --source backtest \
   --out danh-gia.csv --limit 20 --sort worst
 ```
 
-### 4.4 Ma trận thí nghiệm
+### 4.5 Ma trận thí nghiệm
 
 ```bash
 npm run backtest-matrix -- --matrix config/experiments/phase7-validation-matrix.yaml
@@ -386,7 +420,7 @@ npm run analyze-backtest-losses -- \
   --report data/reports/experiments/phase7-validation/risk-baseline/report.json
 ```
 
-### 4.5 Testnet
+### 4.6 Testnet
 
 ```bash
 # .env: key TESTNET
@@ -396,7 +430,7 @@ npm run export-trade-review -- --source sqlite --limit 50 --out testnet-review.c
   --config config/production.yaml
 ```
 
-### 4.6 Live (sau checklist)
+### 4.7 Live (sau checklist)
 
 ```bash
 # config: allowLive: true

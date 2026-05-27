@@ -82,6 +82,7 @@ Research cycle merged into production presets (rule-only sentiment, tighter Fib 
 
 - **Alternate entry paths:** Fib-first fallback with optional `breakout` / `emaMomentum` behind `strategy.alternateEntries` (default `enabled: false`); `entry_path` in trade-review CSV. See [spec](docs/superpowers/specs/2026-05-25-alternate-entry-paths-design.md) and [implementation plan](docs/superpowers/plans/2026-05-25-alternate-entry-paths.md).
 - **Entry profile (swing vs intraday):** switch `strategy.entryProfile` in one YAML — Elliott+Fib on `1d/4h` (default) or EMA-context momentum (`breakout` → `emaMomentum`) on `1h/15m` without Fib; `validate` warns on TF mismatch. See [spec](docs/superpowers/specs/2026-05-27-entry-profile-momentum-design.md) and operator notes in [HUONG-DAN-FUTURES.md](docs/HUONG-DAN-FUTURES.md) §7.7.
+- **Trigger mode (news vs technical):** `strategy.triggerMode` — default `news` keeps RSS-driven signals; `technical` disables RSS/`NewsPipeline` and evaluates on each entry candle close using EMA context direction (intraday). Operator guide: [HUONG-DAN-FUTURES.md](docs/HUONG-DAN-FUTURES.md) §7.8, backtest contrast: [BACKTEST-SAT-LIVE.md](docs/BACKTEST-SAT-LIVE.md).
 
 **Mode progression:** sim → testnet (≥1 week + trade review) → live only after checklist + `allowLive: true`.
 
@@ -105,6 +106,7 @@ File mặc định: `config/default.yaml` (hoặc `config/production.yaml` cho v
 | `allowLive` | **`false` by default**; set `true` only after `docs/LIVE-SAFETY-CHECKLIST.md` |
 | `entryGates` | Phase 6 MTF veto layer (`enabled`, `captureRejects` for review exports) |
 | `strategy.fibonacci.zoneTolerancePercent` | `0.02` production preset (Phase 4/6) |
+| `strategy.triggerMode` | `news` (mặc định, RSS + pipeline tin) hoặc `technical` (không tin: quét mọi symbol mỗi nến entry đóng, hướng từ EMA context; backtest chỉ cần kline). Spec: [technical trigger mode](docs/superpowers/specs/2026-05-25-technical-trigger-mode-design.md) |
 | `risk.cooldownAfterLoss` | Optional per-symbol cooldown after loss (Phase 7; default off) |
 | `symbols` | Danh sách cặp futures (whitelist RSS) |
 | `symbolOverrides` | Ghi đè risk/strategy theo symbol |
