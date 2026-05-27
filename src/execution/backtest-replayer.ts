@@ -170,15 +170,27 @@ export class BacktestReplayer {
       skipDownload = false,
     } = this.options;
 
-    const signalRepo = new SignalRepository(db);
-    let signals = signalRepo.listBetween(from, to);
+    const isTechnical = config.strategy.triggerMode === 'technical';
+    let signals: NewsSignal[] = [];
 
-    if (mockSentiment) {
-      signals = generateMockSignals(from, to, symbols, mockSentimentIntervalHours);
-    } else if (signals.length === 0) {
-      throw new Error(
-        'No news_signals in date range. Run sim first or pass --mock-sentiment.',
-      );
+    if (isTechnical) {
+      signals = [];
+      if (mockSentiment) {
+        console.warn(
+          '[backtest] triggerMode technical: mock sentiment is ignored (news signals are not used in this mode)',
+        );
+      }
+    } else {
+      const signalRepo = new SignalRepository(db);
+      signals = signalRepo.listBetween(from, to);
+
+      if (mockSentiment) {
+        signals = generateMockSignals(from, to, symbols, mockSentimentIntervalHours);
+      } else if (signals.length === 0) {
+        throw new Error(
+          'No news_signals in date range. Run sim first or pass --mock-sentiment.',
+        );
+      }
     }
 
     const contextTf = config.timeframes.context;
@@ -271,8 +283,10 @@ export class BacktestReplayer {
         continue;
       }
 
-      for (const signal of signalsInBar(signals, candle)) {
-        bus.emit('news:signal', signal);
+      if (!isTechnical) {
+        for (const signal of signalsInBar(signals, candle)) {
+          bus.emit('news:signal', signal);
+        }
       }
 
       await flushAsyncHandlers();
