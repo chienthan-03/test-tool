@@ -10,6 +10,10 @@ import type {
 import type { KlineStore } from '../market/kline-store.js';
 import type { EntryGate } from './entry-gate.js';
 import type { PendingSignalStore } from './pending-signals.js';
+import { resolveEmaContextDirection } from './technical-direction.js';
+
+const TECHNICAL_NEWS_ID = 'technical';
+const TECHNICAL_STRENGTH = 1.0;
 
 export class StrategyEngine {
   constructor(
@@ -32,6 +36,10 @@ export class StrategyEngine {
   }
 
   private async handleNewsSignal(signal: NewsSignal): Promise<void> {
+    if (this.config.strategy.triggerMode === 'technical') {
+      return;
+    }
+
     if (this.isPaused()) {
       return;
     }
@@ -51,11 +59,16 @@ export class StrategyEngine {
   }
 
   private async handleCandleClose(event: CandleCloseEvent): Promise<void> {
+    if (event.tf !== this.config.timeframes.entry) {
+      return;
+    }
+
     if (this.isPaused()) {
       return;
     }
 
-    if (event.tf !== this.config.timeframes.entry) {
+    if (this.config.strategy.triggerMode === 'technical') {
+      await this.handleTechnicalCandleClose(event);
       return;
     }
 
@@ -117,5 +130,49 @@ export class StrategyEngine {
 
     this.pending.remove(event.symbol);
     this.bus.emit('strategy:intent', intent);
+  }
+
+  private async handleTechnicalCandleClose(_event: CandleCloseEvent): Promise<void> {
+    for (const symbol of this.config.symbols) {
+      if (this.isInCooldown(symbol)) {
+        continue;
+      }
+      if (
+        this.config.strategy.onePositionPerSymbol &&
+        (await this.hasPosition(symbol))
+      ) {
+        continue;
+      }
+
+      const direction = resolveEmaContextDirection(symbol, this._store, this.config);
+      if (!direction) {
+        continue;
+      }
+
+      const gate = this.entryGate.evaluate(symbol, direction, TECHNICAL_STRENGTH);
+      if (!gate.allow || !gate.entry) {
+        continue;
+      }
+
+      const entry = gate.entry;
+      const side: OrderSide = direction === 'long' ? 'BUY' : 'SELL';
+      const intent: TradeIntent = {
+        id: randomUUID(),
+        symbol,
+        side,
+        newsSignalId: `technical-${symbol}-${this.getNow().toISOString()}`,
+        newsId: TECHNICAL_NEWS_ID,
+        entryPrice: entry.close,
+        atr: entry.atr,
+        stopLoss: entry.stopLoss,
+        takeProfit: entry.takeProfit,
+        contextTimeframe: this.config.timeframes.context,
+        entryTimeframe: this.config.timeframes.entry,
+        entryPath: gate.entryPath ?? 'fib',
+        createdAt: this.getNow(),
+      };
+
+      this.bus.emit('strategy:intent', intent);
+    }
   }
 }
