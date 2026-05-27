@@ -11,7 +11,7 @@ export const registerShutdown = (ctx: RuntimeContext): void => {
   const handleSigint = async (): Promise<void> => {
     ctx.log.info('shutdown_signal_received');
 
-    ctx.rssManager.stop();
+    ctx.rssManager?.stop();
     ctx.market.stop();
 
     const positions = await ctx.adapter.getAllPositions();

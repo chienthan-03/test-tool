@@ -16,8 +16,8 @@ export interface RuntimeContext {
   log: Logger;
   db: Database.Database;
   adapter: ExecutionAdapter;
-  newsPipeline: NewsPipeline;
-  rssManager: RssPollerManager;
+  newsPipeline?: NewsPipeline;
+  rssManager?: RssPollerManager;
   market: BinanceMarket;
   strategy: StrategyEngine;
   risk: RiskEngine;

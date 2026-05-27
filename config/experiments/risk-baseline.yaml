@@ -79,6 +79,7 @@ sentiment:
     defaultTtlMinutes: 45
 
 strategy:
+  triggerMode: news
   atrPeriod: 14
   minAtrPercent: 0.12
   maxAtrPercent: 3.5
@@ -100,6 +101,32 @@ strategy:
     targetExtension: 1.618
     stopBelowSwing: true
     stopBufferPercent: 0.002
+  entryProfile: swing
+  profiles:
+    swing:
+      contextMode: elliott
+      entryPaths:
+        primary: fib
+      useAlternateFallback: false
+  alternateEntries:
+    enabled: false
+    order:
+      - breakout
+      - emaMomentum
+    fallbackOnReasons:
+      - outside_fib_zone
+      - no_matching_impulse_leg
+      - risk_reward_too_low
+    positionScale: 1
+    breakout:
+      enabled: true
+      lookbackBars: 20
+      bufferPercent: 0.001
+    emaMomentum:
+      enabled: true
+      fastPeriod: 9
+      slowPeriod: 21
+      slopeLookback: 3
 
 risk:
   positionPercent: 15

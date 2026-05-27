@@ -173,41 +173,46 @@ const wireTradingStack = async (
 
   wireExecution(bus, adapter, tradeRepo, mode, log);
 
-  const mapper = new SymbolMapper(config.symbols);
-  const scorer = new RuleScorer(config.sentiment.rules);
-  const merger = new SignalMerger({
-    symbols: config.symbols,
-    rules: { minStrength: config.sentiment.rules.minStrength },
-    llm: {
-      minConfidence: config.sentiment.llm.minConfidence,
-      defaultTtlMinutes: config.sentiment.llm.defaultTtlMinutes,
-    },
-  });
+  let newsPipeline: NewsPipeline | undefined;
+  let rssManager: RssPollerManager | undefined;
 
-  const llmGateway = config.sentiment.llm.enabled
-    ? new LlmGateway(config.sentiment.llm, new LlmRepository(db))
-    : null;
+  if (config.strategy.triggerMode !== 'technical') {
+    const mapper = new SymbolMapper(config.symbols);
+    const scorer = new RuleScorer(config.sentiment.rules);
+    const merger = new SignalMerger({
+      symbols: config.symbols,
+      rules: { minStrength: config.sentiment.rules.minStrength },
+      llm: {
+        minConfidence: config.sentiment.llm.minConfidence,
+        defaultTtlMinutes: config.sentiment.llm.defaultTtlMinutes,
+      },
+    });
 
-  const newsPipeline = new NewsPipeline({
-    mapper,
-    scorer,
-    merger,
-    llmGateway,
-    newsRepo: new NewsRepository(db),
-    signalRepo: new SignalRepository(db),
-    bus,
-    config,
-    log,
-  });
+    const llmGateway = config.sentiment.llm.enabled
+      ? new LlmGateway(config.sentiment.llm, new LlmRepository(db))
+      : null;
 
-  const rssManager = new RssPollerManager({
-    config,
-    poller: new RssPoller(),
-    pipeline: newsPipeline,
-    feedRepo: new FeedRepository(db),
-    bus,
-    log,
-  });
+    newsPipeline = new NewsPipeline({
+      mapper,
+      scorer,
+      merger,
+      llmGateway,
+      newsRepo: new NewsRepository(db),
+      signalRepo: new SignalRepository(db),
+      bus,
+      config,
+      log,
+    });
+
+    rssManager = new RssPollerManager({
+      config,
+      poller: new RssPoller(),
+      pipeline: newsPipeline,
+      feedRepo: new FeedRepository(db),
+      bus,
+      log,
+    });
+  }
 
   const store = new KlineStore();
   const market = new BinanceMarket(store, bus, config, log);
@@ -262,7 +267,7 @@ const wireTradingStack = async (
 
   const intervals = [config.timeframes.context, config.timeframes.entry];
   await market.start(config.symbols, intervals);
-  rssManager.start();
+  rssManager?.start();
 
   const ctx: RuntimeContext = {
     config,
@@ -280,7 +285,10 @@ const wireTradingStack = async (
   };
 
   registerShutdown(ctx);
-  log.info({ symbols: config.symbols, mode }, `${mode}_runtime_started`);
+  log.info(
+    { symbols: config.symbols, mode, triggerMode: config.strategy.triggerMode },
+    `${mode}_runtime_started`,
+  );
 
   return ctx;
 };
