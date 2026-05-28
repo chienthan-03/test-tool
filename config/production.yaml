@@ -1,4 +1,4 @@
-# Recommended operator profile — Phases 3–7 + 2a news veto (technical intraday).
+# Baseline: technical intraday — 4h EMA context + 1h emaMomentum only (no breakout / no newsVeto).
 # Micro account preset (~32 USDT): leverage applied to notional sizing (see risk + sim/binance.margin).
 # Point CONFIG_PATH here for testnet/sim; enable live only after docs/KIEM-TRA-LIVE.md.
 # Huong dan Futures (tieng Viet): docs/HUONG-DAN-FUTURES.md
@@ -8,11 +8,11 @@ mode: sim
 allowLive: false
 
 symbols:
-  # - BTCUSDT
+  - BTCUSDT
   # - ETHUSDT
   # - SOLUSDT
   # - BNBUSDT
-  - XRPUSDT
+  # - XRPUSDT
 
 symbolOverrides: {}
 
@@ -106,17 +106,18 @@ strategy:
     stopBufferPercent: 0.002
   triggerMode: technical
   newsVeto:
-    enabled: true
+    enabled: false
     minStrength: 0.75
     vetoTags: [macro, hack, etf]
     leaderSymbol: BTCUSDT
   entryProfile: intraday
   profiles:
+    # swing: Elliott + Fib — use triggerMode: news + seed-signals or --mock-sentiment for backtest
     # swing:
     #   contextMode: elliott
     #   entryPaths:
     #     primary: fib
-    #   useAlternateFallback: false
+    #   useAlternateFallback: true
     intraday:
       contextMode: emaTrend
       contextEma:
@@ -124,12 +125,14 @@ strategy:
         slowPeriod: 50
         flatPercent: 0.0005
       entryPaths:
-        order: [breakout, emaMomentum]
+        order: [
+          # breakout,
+          emaMomentum]
       positionScale: 1
   alternateEntries:
-    enabled: true
+    enabled: false
     order:
-      - breakout
+      # - breakout
       - emaMomentum
     fallbackOnReasons:
       - outside_fib_zone
@@ -137,7 +140,7 @@ strategy:
       - risk_reward_too_low
     positionScale: 1
     breakout:
-      enabled: true
+      enabled: false 
       lookbackBars: 20
       bufferPercent: 0.001
     emaMomentum:
@@ -151,7 +154,7 @@ strategy:
 risk:
   positionPercent: 50
   minNotionalUsdt: 5
-  maxNotionalUsdt: 110
+  maxNotionalUsdt: 90
   slAtrMultiplier: 2.0
   tpAtrMultiplier: 3.0
   trailingStop: false
@@ -198,4 +201,4 @@ logging:
 entryGates:
   enabled: true
   logRejects: true
-  captureRejects: false
+  captureRejects: true
