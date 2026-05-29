@@ -161,6 +161,8 @@ export interface BacktestReport {
   trades: BacktestTradeRecord[];
   gateRejects?: GateRejectRecord[];
   byEntryPath?: Record<string, EntryPathMetrics>;
+  /** Absolute path to the written JSON report file, when persisted. */
+  reportPath?: string;
 }
 
 /** Binance LOT_SIZE / PRICE_FILTER / MIN_NOTIONAL for a symbol. */

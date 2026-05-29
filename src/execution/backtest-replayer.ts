@@ -339,6 +339,7 @@ export class BacktestReplayer {
       `backtest-${Date.now()}.json`,
     );
     await writeFile(reportPath, JSON.stringify(report, null, 2), 'utf8');
+    report.reportPath = reportPath;
 
     return report;
   }

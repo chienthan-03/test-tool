@@ -47,6 +47,7 @@ export const registerBacktestCommand = (program: Command): void => {
                 winRate: report.winRate,
                 totalPnlUsdt: report.totalPnlUsdt,
                 maxDrawdownPct: report.maxDrawdownPct,
+                reportPath: report.reportPath,
               },
               null,
               2,
