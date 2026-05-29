@@ -21,7 +21,9 @@
     "export-backtest-trades": "tsx scripts/export-backtest-trades-review.ts",
     "analyze-backtest-losses": "tsx scripts/analyze-backtest-losses.ts",
     "parity-check": "tsx scripts/run-parity-check.ts",
-    "prefetch-klines": "tsx scripts/prefetch-klines.ts"
+    "prefetch-klines": "tsx scripts/prefetch-klines.ts",
+    "optimize-batch": "tsx scripts/optimize-batch.ts",
+    "optimize-finalize": "tsx scripts/optimize-finalize.ts"
   },
   "engines": {
     "node": ">=20"

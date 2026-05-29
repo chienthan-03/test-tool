@@ -41,6 +41,8 @@ export const ContextEmaSchema = z.object({
   fastPeriod: z.number().int().min(2).max(100).default(20),
   slowPeriod: z.number().int().min(3).max(200).default(50),
   flatPercent: z.number().min(0).max(0.01).default(0.0005),
+  /** Long only when close > slow EMA; short only when close < slow EMA (4h context). */
+  requireCloseBeyondSlow: z.boolean().default(false),
 });
 
 export const SwingProfileSchema = z.object({
@@ -51,7 +53,12 @@ export const SwingProfileSchema = z.object({
 
 export const IntradayProfileSchema = z.object({
   contextMode: z.literal('emaTrend'),
-  contextEma: ContextEmaSchema.default({ fastPeriod: 20, slowPeriod: 50, flatPercent: 0.0005 }),
+  contextEma: ContextEmaSchema.default({
+    fastPeriod: 20,
+    slowPeriod: 50,
+    flatPercent: 0.0005,
+    requireCloseBeyondSlow: false,
+  }),
   entryPaths: z.object({
     order: z.array(AlternateEntryPathIdSchema).min(1).default(['breakout', 'emaMomentum']),
   }),
@@ -66,7 +73,7 @@ export const StrategyProfilesSchema = z.object({
   }),
   intraday: IntradayProfileSchema.default({
     contextMode: 'emaTrend',
-    contextEma: { fastPeriod: 20, slowPeriod: 50, flatPercent: 0.0005 },
+    contextEma: { fastPeriod: 20, slowPeriod: 50, flatPercent: 0.0005, requireCloseBeyondSlow: false },
     entryPaths: { order: ['breakout', 'emaMomentum'] },
     positionScale: 0.75,
   }),
@@ -83,6 +90,8 @@ export const EmaMomentumEntryConfigSchema = z.object({
   fastPeriod: z.number().int().min(2).max(50).default(9),
   slowPeriod: z.number().int().min(3).max(200).default(21),
   slopeLookback: z.number().int().min(1).max(20).default(3),
+  /** Long only when close > slow EMA; short only when close < slow EMA (1h entry). */
+  requireCloseBeyondSlow: z.boolean().default(false),
 });
 
 export const AlternateEntriesConfigSchema = z.object({
@@ -98,6 +107,7 @@ export const AlternateEntriesConfigSchema = z.object({
     fastPeriod: 9,
     slowPeriod: 21,
     slopeLookback: 3,
+    requireCloseBeyondSlow: false,
   }),
 });
 
@@ -192,7 +202,13 @@ export const AppConfigSchema = z
       fallbackOnReasons: ['outside_fib_zone', 'no_matching_impulse_leg', 'risk_reward_too_low'],
       positionScale: 1,
       breakout: { enabled: true, lookbackBars: 20, bufferPercent: 0.001 },
-      emaMomentum: { enabled: true, fastPeriod: 9, slowPeriod: 21, slopeLookback: 3 },
+      emaMomentum: {
+        enabled: true,
+        fastPeriod: 9,
+        slowPeriod: 21,
+        slopeLookback: 3,
+        requireCloseBeyondSlow: false,
+      },
     }),
   }),
   risk: z.object({

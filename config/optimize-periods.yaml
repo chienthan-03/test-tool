@@ -1,0 +1,33 @@
+periods:
+  - from: "2024-10-01"
+    to: "2024-12-31"
+  - from: "2025-10-01"
+    to: "2025-12-31"
+
+targets:
+  targetPnlPercent: 60
+  minWinRate: 55
+  maxIterations: 20
+
+baseConfig: config/production.yaml
+seedConfig: config/production.yaml
+
+symbolPool:
+  - BTCUSDT
+  - ETHUSDT
+  - XRPUSDT
+  - SOLUSDT
+  - BNBUSDT
+
+denylist:
+  - mode
+  - allowLive
+  - storage
+  - binance.baseUrl
+  - binance.testnetBaseUrl
+  - feeds
+  - sentiment.llm
+
+paths:
+  candidatesDir: config/optimize
+  optimizeDataDir: data/optimize

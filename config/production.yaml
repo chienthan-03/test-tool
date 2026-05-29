@@ -1,4 +1,4 @@
-# Baseline: technical intraday — 4h EMA context + 1h emaMomentum only (no breakout / no newsVeto).
+# Technical intraday — tighter 4h/1h EMA stack + price-beyond-slow filters (no breakout / no newsVeto).
 # Micro account preset (~32 USDT): leverage applied to notional sizing (see risk + sim/binance.margin).
 # Point CONFIG_PATH here for testnet/sim; enable live only after docs/KIEM-TRA-LIVE.md.
 # Huong dan Futures (tieng Viet): docs/HUONG-DAN-FUTURES.md
@@ -9,10 +9,10 @@ allowLive: false
 
 symbols:
   - BTCUSDT
-  # - ETHUSDT
+  - ETHUSDT
   # - SOLUSDT
   # - BNBUSDT
-  # - XRPUSDT
+  - XRPUSDT
 
 symbolOverrides: {}
 
@@ -84,15 +84,15 @@ sentiment:
 
 strategy:
   atrPeriod: 14
-  minAtrPercent: 0.12
-  maxAtrPercent: 3.5
+  minAtrPercent: 0.2
+  maxAtrPercent: 2.5
   entry:
     waitForNextCandleClose: true
   onePositionPerSymbol: true
   swing:
     lookback: 3
     minSwingCount: 5
-    minImpulsePercent: 80
+    minImpulsePercent: 20
   elliott:
     allowSideways: false
     contextRequireImpulse: false
@@ -122,8 +122,9 @@ strategy:
       contextMode: emaTrend
       contextEma:
         fastPeriod: 20
-        slowPeriod: 50
-        flatPercent: 0.0005
+        slowPeriod: 100
+        flatPercent: 0.001
+        requireCloseBeyondSlow: true
       entryPaths:
         order: [
           # breakout,
@@ -145,16 +146,17 @@ strategy:
       bufferPercent: 0.001
     emaMomentum:
       enabled: true
-      fastPeriod: 9
-      slowPeriod: 21
-      slopeLookback: 3
+      fastPeriod: 12
+      slowPeriod: 26
+      slopeLookback: 5
+      requireCloseBeyondSlow: true
 
 # Micro account: notional ≈ balance × positionPercent × leverage (maxNotional cap).
 # 200 × 50% × 10x = 1000 → cap 160 USDT notional (~0.001+ BTC).
 risk:
   positionPercent: 50
   minNotionalUsdt: 5
-  maxNotionalUsdt: 90
+  maxNotionalUsdt: 200
   slAtrMultiplier: 2.0
   tpAtrMultiplier: 3.0
   trailingStop: false
@@ -172,14 +174,14 @@ binance:
   margin:
     enabled: true
     mode: isolated
-    leverage: 18
+    leverage: 20
   circuitBreaker:
     enabled: true
     maxFailures: 3
     windowMs: 300000
 
 sim:
-  leverage: 18
+  leverage: 20
   marginMode: isolated
   initialBalanceUsdt: 600
   feeRate: 0.0004

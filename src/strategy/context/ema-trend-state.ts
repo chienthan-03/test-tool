@@ -4,7 +4,10 @@ import type { KlineStore } from '../../market/kline-store.js';
 import { ema, last } from '../../market/indicators.js';
 
 export type EmaTrendState =
-  | { ok: false; reason: 'ema_context_insufficient_data' | 'ema_context_flat' }
+  | {
+      ok: false;
+      reason: 'ema_context_insufficient_data' | 'ema_context_flat' | 'ema_context_price_filter';
+    }
   | {
       ok: true;
       fast: number;
@@ -54,6 +57,16 @@ export const computeEmaTrendState = (
   }
 
   const direction: SignalDirection = fast > slow ? 'long' : 'short';
+
+  if (emaCfg.requireCloseBeyondSlow) {
+    if (direction === 'long' && close <= slow) {
+      return { ok: false, reason: 'ema_context_price_filter' };
+    }
+    if (direction === 'short' && close >= slow) {
+      return { ok: false, reason: 'ema_context_price_filter' };
+    }
+  }
+
   return {
     ok: true,
     fast,

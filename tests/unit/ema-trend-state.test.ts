@@ -131,4 +131,20 @@ describe('computeEmaTrendState', () => {
 
     expect(state).toEqual({ ok: false, reason: 'ema_context_insufficient_data' });
   });
+
+  it('returns ema_context_price_filter when uptrend but close below slow EMA', () => {
+    const store = new KlineStore();
+    seedTrendCandles(store, symbol, contextTf, 60, 10_000, 50, 80);
+    const config = buildConfig({ requireCloseBeyondSlow: true });
+    const candles = store.getCandles(symbol, contextTf);
+    store.update(
+      symbol,
+      contextTf,
+      makeCandle(symbol, contextTf, candles.length, 11_000, 80),
+    );
+
+    const state = computeEmaTrendState(symbol, store, config);
+
+    expect(state).toEqual({ ok: false, reason: 'ema_context_price_filter' });
+  });
 });

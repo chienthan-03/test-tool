@@ -497,4 +497,23 @@ npm test -- tests/integration/mode-parity-replay.test.ts tests/integration/testn
 
 ---
 
+## Strategy optimize loop
+
+1. Edit periods/targets: `config/optimize-periods.yaml`
+2. Seed first candidate: copy `config/production.yaml` → `config/optimize/candidate-001.yaml`
+3. Run batch: `npm run optimize-batch -- --manifest config/optimize-periods.yaml --config config/optimize/candidate-001.yaml --candidate-id candidate-001 --iteration 1`
+4. Agent: attach `@optimize-strategy` for automated mutations
+5. Promote winner: `npm run optimize-finalize -- --manifest config/optimize-periods.yaml`
+
+Artifacts: `data/optimize/leaderboard.json`, `data/optimize/run-log.jsonl`
+
+**Windows:** Nếu `npm run … --` không chuyển tham số đúng, dùng `npx tsx` trực tiếp:
+
+```bash
+npx tsx scripts/optimize-batch.ts --manifest config/optimize-periods.yaml --config config/optimize/candidate-001.yaml --candidate-id candidate-001 --iteration 1
+npx tsx scripts/optimize-finalize.ts --manifest config/optimize-periods.yaml
+```
+
+---
+
 *Cập nhật: 2026-05-25 — đồng bộ CLI và npm scripts trong repo.*

@@ -4,3 +4,4 @@ dist/
 data/
 *.db
 coverage/
+config/optimize/candidate-*.yaml

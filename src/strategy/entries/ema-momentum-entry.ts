@@ -63,6 +63,21 @@ export class EmaMomentumEntryEvaluator implements EntryPathEvaluator {
       };
     }
 
+    if (emaCfg.requireCloseBeyondSlow) {
+      const priceOk =
+        direction === 'long'
+          ? atrCheck.close > slowNow
+          : atrCheck.close < slowNow;
+      if (!priceOk) {
+        return {
+          confirm: false,
+          reason: 'ema_price_beyond_slow',
+          close: atrCheck.close,
+          atr: atrCheck.atr,
+        };
+      }
+    }
+
     const fastPrior = emaFast[emaFast.length - 1 - emaCfg.slopeLookback];
     if (fastPrior === undefined || Number.isNaN(fastPrior) || fastPrior === 0) {
       return {
