@@ -23,6 +23,7 @@
     "parity-check": "tsx scripts/run-parity-check.ts",
     "prefetch-klines": "tsx scripts/prefetch-klines.ts",
     "optimize-batch": "tsx scripts/optimize-batch.ts",
+    "optimize-diagnose": "tsx scripts/optimize-diagnose.ts",
     "optimize-finalize": "tsx scripts/optimize-finalize.ts"
   },
   "engines": {

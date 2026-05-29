@@ -1,0 +1,22 @@
+{
+  "from": "2025-10-01T00:00:00.000Z",
+  "to": "2025-12-31T00:00:00.000Z",
+  "symbols": ["BTCUSDT", "ETHUSDT"],
+  "totalTrades": 45,
+  "wins": 23,
+  "losses": 22,
+  "winRate": 0.5111111111111111,
+  "totalPnlUsdt": 4.0,
+  "maxDrawdownPct": 2.5,
+  "trades": [
+    { "symbol": "BTCUSDT", "side": "BUY", "entry": 100, "exit": 110, "pnl": 12.5, "newsId": "technical" },
+    { "symbol": "ETHUSDT", "side": "SELL", "entry": 50, "exit": 48, "pnl": -8.2, "newsId": "technical" },
+    { "symbol": "BTCUSDT", "side": "SELL", "entry": 105, "exit": 100, "pnl": -0.3, "newsId": "technical" }
+  ],
+  "gateRejects": [
+    { "symbol": "BTCUSDT", "reason": "ema_slope_weak", "stage": "entry", "direction": "LONG", "at": "2025-10-15T12:00:00.000Z" },
+    { "symbol": "ETHUSDT", "reason": "ema_slope_weak", "stage": "entry", "direction": "SHORT", "at": "2025-10-16T12:00:00.000Z" },
+    { "symbol": "BTCUSDT", "reason": "ema_context_flat", "stage": "context", "direction": "LONG", "at": "2025-10-17T12:00:00.000Z" },
+    { "symbol": "BTCUSDT", "reason": "ema_slope_weak", "stage": "entry", "direction": "LONG", "at": "2025-10-18T12:00:00.000Z" }
+  ]
+}

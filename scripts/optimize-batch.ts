@@ -9,6 +9,7 @@ import { runBacktest } from '../src/execution/backtest-replayer.js';
 import { openDatabase } from '../src/storage/db.js';
 import { migrate } from '../src/storage/migrate.js';
 import { parseOptimizeManifest } from './lib/optimize-manifest.js';
+import { runOptimizeDiagnose } from './lib/optimize-diagnose.js';
 import {
   buildLeaderboardFile,
   computeCandidateScore,
@@ -191,18 +192,14 @@ export const runOptimizeBatch = async (options: {
   console.log(JSON.stringify(summary, null, 2));
 
   if (options.diagnose) {
-    try {
-      const { runOptimizeDiagnose } = await import('./lib/optimize-diagnose.js');
-      const diagnosis = await runOptimizeDiagnose({
-        manifest,
-        candidateId: options.candidateId,
-        reportPaths,
-        config,
-      });
-      console.log(JSON.stringify(diagnosis));
-    } catch {
-      console.log(JSON.stringify({ diagnose: 'pending' }));
-    }
+    const diagnosis = await runOptimizeDiagnose({
+      manifest,
+      candidateId: options.candidateId,
+      reportPaths,
+      config,
+      configPath: options.configPath,
+    });
+    console.log(JSON.stringify(diagnosis));
   }
 
   return summary;
