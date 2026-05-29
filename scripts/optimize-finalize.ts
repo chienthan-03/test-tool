@@ -3,16 +3,27 @@ import { join } from 'node:path';
 import { parse } from 'yaml';
 import { loadEnvFile } from '../src/config/load-env.js';
 import { parseOptimizeManifest } from './lib/optimize-manifest.js';
-import { pickBestEntry, type LeaderboardFile } from './lib/optimize-scoring.js';
+import {
+  pickBestEffortEntry,
+  pickBestEntry,
+  type LeaderboardFile,
+} from './lib/optimize-scoring.js';
 
 loadEnvFile();
 
 export type FinalizeResult = {
   promoted: boolean;
-  reason: string;
+  reason:
+    | 'target_met'
+    | 'best_effort_cap'
+    | 'best_effort_near_miss'
+    | 'leaderboard_missing'
+    | 'leaderboard_empty';
+  promotedAs?: 'eligible' | 'near_miss';
   candidateId?: string;
   configPath?: string;
   totalPnlPercent?: number;
+  minWinRate?: number;
   targetMet?: boolean;
 };
 
@@ -28,20 +39,40 @@ export const runOptimizeFinalize = async (manifestPath: string): Promise<Finaliz
     return { promoted: false, reason: 'leaderboard_missing' };
   }
 
-  const best = pickBestEntry(leaderboard.entries);
+  let best = pickBestEntry(leaderboard.entries);
+  let promotedAs: 'eligible' | 'near_miss';
+
   if (!best) {
-    return { promoted: false, reason: 'no_eligible_candidate' };
+    best = pickBestEffortEntry(leaderboard.entries);
+    if (!best) {
+      return { promoted: false, reason: 'leaderboard_empty' };
+    }
+    promotedAs = best.eligible ? 'eligible' : 'near_miss';
+  } else {
+    promotedAs = 'eligible';
   }
 
-  const targetMet = best.totalPnlPercent >= manifest.targets.targetPnlPercent;
+  const targetMet =
+    best.eligible && best.totalPnlPercent >= manifest.targets.targetPnlPercent;
   await copyFile(best.configPath, manifest.baseConfig);
+
+  let reason: FinalizeResult['reason'];
+  if (targetMet) {
+    reason = 'target_met';
+  } else if (best.eligible) {
+    reason = 'best_effort_cap';
+  } else {
+    reason = 'best_effort_near_miss';
+  }
 
   return {
     promoted: true,
-    reason: targetMet ? 'target_met' : 'best_effort_cap',
+    reason,
+    promotedAs,
     candidateId: best.candidateId,
     configPath: best.configPath,
     totalPnlPercent: best.totalPnlPercent,
+    minWinRate: best.minWinRate,
     targetMet,
   };
 };
