@@ -38,6 +38,8 @@ export const parseBatchArgs = (argv: string[]) => {
   let candidateId = '';
   let iteration = 0;
   let skipDownload = false;
+  let diagnose = false;
+  let tier: 'config' | 'code' | undefined;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -46,15 +48,23 @@ export const parseBatchArgs = (argv: string[]) => {
     else if (arg === '--candidate-id' && argv[i + 1]) candidateId = argv[++i]!;
     else if (arg === '--iteration' && argv[i + 1]) iteration = Number(argv[++i]!);
     else if (arg === '--skip-download') skipDownload = true;
+    else if (arg === '--diagnose') diagnose = true;
+    else if (arg === '--tier' && argv[i + 1]) {
+      const value = argv[++i]!;
+      if (value !== 'config' && value !== 'code') {
+        throw new Error(`Invalid --tier "${value}" (expected config|code)`);
+      }
+      tier = value;
+    }
   }
 
   if (!configPath || !candidateId) {
     throw new Error(
-      'Usage: npm run optimize-batch -- --manifest config/optimize-periods.yaml --config config/optimize/candidate-001.yaml --candidate-id candidate-001 [--iteration 1] [--skip-download]',
+      'Usage: npm run optimize-batch -- --manifest config/optimize-periods.yaml --config config/optimize/candidate-001.yaml --candidate-id candidate-001 [--iteration 1] [--skip-download] [--diagnose] [--tier config|code]',
     );
   }
 
-  return { manifestPath, configPath, candidateId, iteration, skipDownload };
+  return { manifestPath, configPath, candidateId, iteration, skipDownload, diagnose, tier };
 };
 
 export const runOptimizeBatch = async (options: {
@@ -63,6 +73,8 @@ export const runOptimizeBatch = async (options: {
   candidateId: string;
   iteration: number;
   skipDownload: boolean;
+  diagnose?: boolean;
+  tier?: 'config' | 'code';
 }): Promise<BatchSummary> => {
   const manifestText = await readFile(options.manifestPath, 'utf8');
   const manifest = parseOptimizeManifest(parse(manifestText), options.manifestPath);
@@ -76,6 +88,7 @@ export const runOptimizeBatch = async (options: {
   migrate(db);
 
   const periodMetrics: PeriodMetrics[] = [];
+  const reportPaths: string[] = [];
 
   try {
     for (const [i, period] of manifest.periods.entries()) {
@@ -96,6 +109,8 @@ export const runOptimizeBatch = async (options: {
         mockSentiment: false,
         skipDownload: options.skipDownload,
       });
+
+      if (report.reportPath) reportPaths.push(report.reportPath);
 
       periodMetrics.push({
         from: period.from,
@@ -133,6 +148,8 @@ export const runOptimizeBatch = async (options: {
       winRate: winRateToPercent(p.winRate),
     })),
     iteration: options.iteration,
+    reportPaths,
+    ...(options.tier !== undefined ? { tier: options.tier } : {}),
   };
 
   const leaderboardPath = join(optimizeDir, 'leaderboard.json');
@@ -172,6 +189,22 @@ export const runOptimizeBatch = async (options: {
   };
 
   console.log(JSON.stringify(summary, null, 2));
+
+  if (options.diagnose) {
+    try {
+      const { runOptimizeDiagnose } = await import('./lib/optimize-diagnose.js');
+      const diagnosis = await runOptimizeDiagnose({
+        manifest,
+        candidateId: options.candidateId,
+        reportPaths,
+        config,
+      });
+      console.log(JSON.stringify(diagnosis));
+    } catch {
+      console.log(JSON.stringify({ diagnose: 'pending' }));
+    }
+  }
+
   return summary;
 };
 
