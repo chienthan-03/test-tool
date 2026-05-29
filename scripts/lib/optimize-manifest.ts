@@ -10,6 +10,9 @@ const TargetsSchema = z.object({
   targetPnlPercent: z.number(),
   minWinRate: z.number().min(0).max(100),
   maxIterations: z.number().int().min(1),
+  maxCodeIterations: z.number().int().min(0).default(0),
+  plateauWindow: z.number().int().min(2).default(3),
+  plateauEpsilonWinRate: z.number().min(0).default(1),
 });
 
 const PathsSchema = z

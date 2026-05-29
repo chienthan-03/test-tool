@@ -44,4 +44,17 @@ describe('parseOptimizeManifest', () => {
     expect(manifest.baseConfig).toBe('config/production.yaml');
     expect(manifest.seedConfig).toBe('config/production.yaml');
   });
+
+  it('applies plateau target defaults', () => {
+    const manifest = parseOptimizeManifest(
+      {
+        periods: [{ from: '2024-10-01', to: '2024-12-31' }],
+        targets: { targetPnlPercent: 60, minWinRate: 55, maxIterations: 20 },
+      },
+      'test',
+    );
+    expect(manifest.targets.plateauWindow).toBe(3);
+    expect(manifest.targets.plateauEpsilonWinRate).toBe(1);
+    expect(manifest.targets.maxCodeIterations).toBe(0);
+  });
 });

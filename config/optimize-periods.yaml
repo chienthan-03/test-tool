@@ -8,6 +8,9 @@ targets:
   targetPnlPercent: 60
   minWinRate: 55
   maxIterations: 20
+  # maxCodeIterations: 0       # optional; code-change rounds when plateaued (default 0)
+  # plateauWindow: 3           # optional; consecutive iterations for plateau detection (default 3)
+  # plateauEpsilonWinRate: 1   # optional; min win-rate delta to count as improvement (default 1)
 
 baseConfig: config/production.yaml
 seedConfig: config/production.yaml
