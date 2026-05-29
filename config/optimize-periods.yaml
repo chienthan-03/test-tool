@@ -6,7 +6,7 @@ periods:
 
 targets:
   targetPnlPercent: 60
-  minWinRate: 55
+  minWinRate: 60
   maxIterations: 20
   # maxCodeIterations: 0       # optional; code-change rounds when plateaued (default 0)
   # plateauWindow: 3           # optional; consecutive iterations for plateau detection (default 3)

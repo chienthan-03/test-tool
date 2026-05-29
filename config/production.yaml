@@ -9,10 +9,8 @@ allowLive: false
 
 symbols:
   - BTCUSDT
-  - ETHUSDT
-  # - SOLUSDT
-  # - BNBUSDT
-  - XRPUSDT
+  # - ETHUSDT  # iter-5: focus BTC for win-rate gate
+  # - XRPUSDT
 
 symbolOverrides: {}
 
@@ -84,8 +82,8 @@ sentiment:
 
 strategy:
   atrPeriod: 14
-  minAtrPercent: 0.2
-  maxAtrPercent: 2.5
+  minAtrPercent: 0.34
+  maxAtrPercent: 2.2
   entry:
     waitForNextCandleClose: true
   onePositionPerSymbol: true
@@ -122,8 +120,8 @@ strategy:
       contextMode: emaTrend
       contextEma:
         fastPeriod: 20
-        slowPeriod: 100
-        flatPercent: 0.001
+        slowPeriod: 130
+        flatPercent: 0.0016
         requireCloseBeyondSlow: true
       entryPaths:
         order: [
@@ -146,9 +144,9 @@ strategy:
       bufferPercent: 0.001
     emaMomentum:
       enabled: true
-      fastPeriod: 12
-      slowPeriod: 26
-      slopeLookback: 5
+      fastPeriod: 10
+      slowPeriod: 30
+      slopeLookback: 9
       requireCloseBeyondSlow: true
 
 # Micro account: notional ≈ balance × positionPercent × leverage (maxNotional cap).
@@ -157,12 +155,12 @@ risk:
   positionPercent: 50
   minNotionalUsdt: 5
   maxNotionalUsdt: 200
-  slAtrMultiplier: 2.0
-  tpAtrMultiplier: 3.0
+  slAtrMultiplier: 3.45
+  tpAtrMultiplier: 2.58
   trailingStop: false
   cooldownAfterLoss:
     enabled: true
-    durationHours: 12
+    durationHours: 24
 
 binance:
   baseUrl: https://fapi.binance.com
