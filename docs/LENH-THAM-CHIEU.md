@@ -501,9 +501,42 @@ npm test -- tests/integration/mode-parity-replay.test.ts tests/integration/testn
 
 1. Edit periods/targets: `config/optimize-periods.yaml`
 2. Seed first candidate: copy `config/production.yaml` → `config/optimize/candidate-001.yaml`
-3. Run batch: `npm run optimize-batch -- --manifest config/optimize-periods.yaml --config config/optimize/candidate-001.yaml --candidate-id candidate-001 --iteration 1`
-4. Agent: attach `@optimize-strategy` for automated mutations
-5. Promote winner: `npm run optimize-finalize -- --manifest config/optimize-periods.yaml`
+3. Prefetch klines (một khoảng bao trùm **tất cả** `periods` trong manifest):
+
+```bash
+npm run prefetch-klines -- --config config/optimize/candidate-001.yaml --from 2024-10-01 --to 2025-12-31
+```
+
+4. Run batch:
+
+```bash
+npm run optimize-batch -- --manifest config/optimize-periods.yaml \
+  --config config/optimize/candidate-001.yaml \
+  --candidate-id candidate-001 --iteration 1
+```
+
+5. Chẩn đoán sau mỗi batch (hoặc gộp trong batch):
+
+```bash
+npm run optimize-diagnose -- --manifest config/optimize-periods.yaml --candidate-id candidate-001
+
+# hoặc
+npm run optimize-batch -- --manifest config/optimize-periods.yaml \
+  --config config/optimize/candidate-001.yaml \
+  --candidate-id candidate-001 --iteration 1 --diagnose
+```
+
+| Tham số `optimize-diagnose` | Mô tả |
+|-----------------------------|--------|
+| `--manifest` | `config/optimize-periods.yaml` (mặc định) |
+| `--candidate-id` | Đọc `reportPaths` từ `leaderboard.json` |
+| `--report` | Lặp lại; đường dẫn report từng period |
+| `--config` | Config ứng viên (symbol list cho klines check) |
+
+Stdout là JSON: `klinesOk`, `weakestPeriod`, `gateRejectTop`, `suggestedMutations`, `plateau`, v.v. Chỉ tin `winRate`/PnL khi `klinesOk: true`.
+
+6. Agent: `@optimize-strategy` (v2: preflight, tier CONFIG/CODE/MANIFEST)
+7. Promote: `npm run optimize-finalize -- --manifest config/optimize-periods.yaml`
 
 Artifacts: `data/optimize/leaderboard.json`, `data/optimize/run-log.jsonl`
 
@@ -511,9 +544,10 @@ Artifacts: `data/optimize/leaderboard.json`, `data/optimize/run-log.jsonl`
 
 ```bash
 npx tsx scripts/optimize-batch.ts --manifest config/optimize-periods.yaml --config config/optimize/candidate-001.yaml --candidate-id candidate-001 --iteration 1
+npx tsx scripts/optimize-diagnose.ts --manifest config/optimize-periods.yaml --candidate-id candidate-001
 npx tsx scripts/optimize-finalize.ts --manifest config/optimize-periods.yaml
 ```
 
 ---
 
-*Cập nhật: 2026-05-25 — đồng bộ CLI và npm scripts trong repo.*
+*Cập nhật: 2026-05-29 — thêm `optimize-diagnose`, prefetch trong optimize loop.*

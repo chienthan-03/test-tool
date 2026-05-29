@@ -15,7 +15,7 @@ Apply **1–3 changes** per iteration. Stay within these ranges; never edit path
 | flatPercent | `strategy.profiles.intraday.contextEma.flatPercent` | 0.0005–0.002 |
 | Entry fast EMA | `strategy.profiles.intraday.emaMomentum.fastPeriod` | 8–15 |
 | Entry slow EMA | `strategy.profiles.intraday.emaMomentum.slowPeriod` | 20–35 |
-| slopeLookback | `strategy.profiles.intraday.emaMomentum.slopeLookback` | 3–8 |
+| slopeLookback | `strategy.profiles.intraday.emaMomentum.slopeLookback` | 3–8 (YAML edits); diagnose may suggest up to **10** when win gate is binding |
 | minAtrPercent | `strategy.minAtrPercent` | 0.1–0.35 |
 | maxAtrPercent | `strategy.maxAtrPercent` | 2–4 |
 | slAtrMultiplier | `risk.slAtrMultiplier` | 1.5–3 |
@@ -25,6 +25,20 @@ Apply **1–3 changes** per iteration. Stay within these ranges; never edit path
 | leverage | `sim.leverage`, `binance.margin.leverage` | keep equal, 5–20 |
 
 Symbols: only add/remove from `symbolPool` in the manifest.
+
+---
+
+## Gap-to-target (from `optimize-diagnose`)
+
+Use `aggregate.gapWinRatePoints` and `aggregate.gapPnlPercentPoints` after `klinesOk: true`. Prefer `suggestedMutations` (≤3) over ad-hoc sweeps.
+
+| `gapWinRatePoints` | Priority actions |
+|--------------------|------------------|
+| > 10 | Consider **tier 2** (code); prune worst symbols; tighten `risk.tpAtrMultiplier` + widen `risk.slAtrMultiplier` |
+| 5–10 | Raise `strategy.minAtrPercent`; increase `slopeLookback` (up to 10 in suggestions only); raise `contextEma.flatPercent`; try BTC-only symbol set |
+| < 5 | Fine-tune `tpAtrMultiplier` / `slAtrMultiplier`; adjust `risk.cooldownAfterLoss.durationHours` |
+
+When PnL gap dominates but win rate passes: widen `tpAtrMultiplier` or loosen `maxAtrPercent` per gate-reject table below.
 
 ---
 
@@ -94,10 +108,18 @@ Fix the highest-count `reason` first (see table above).
 
 | File | Contents |
 |------|----------|
-| `data/optimize/leaderboard.json` | All candidates, `eligible`, `totalPnlPercent`, per-period metrics |
+| `data/optimize/leaderboard.json` | All candidates, `eligible`, `totalPnlPercent`, `reportPaths`, optional `tier`; `best`, `bestNearEligible`, `bestPnl` |
 | `data/optimize/run-log.jsonl` | One line per batch: `eligible`, `minWinRate`, `totalPnlPercent`, `targetMet`, `reason` |
 
-**Do not recompute** `totalPnlPercent` or eligibility by hand — use the JSON summary from `optimize-batch` stdout and `leaderboard.json`.
+**Do not recompute** `totalPnlPercent` or eligibility by hand — use `optimize-batch` stdout, `leaderboard.json`, and `optimize-diagnose` JSON.
+
+### Diagnose instead of hand-parsing reports
+
+```bash
+npm run optimize-diagnose -- --manifest config/optimize-periods.yaml --candidate-id candidate-NNN
+```
+
+Key fields: `klinesOk`, `weakestPeriod`, `gateRejectTop`, `symbolPnl`, `suggestedMutations`, `plateau`, `suggestedTier`.
 
 ---
 
